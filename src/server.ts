@@ -7,6 +7,7 @@ import path from 'path';
 import cors from 'cors';
 import md5 from 'md5';
 import { fileURLToPath } from 'url';
+import { configDotenv } from 'dotenv';
 
 // --- ТИПЫ ДАННЫХ (Interfaces) ---
 interface User {
@@ -70,10 +71,10 @@ interface AvgResult {
 }
 
 // --- КОНФИГУРАЦИЯ ---
-const PORT = 3000;
-
-const BOT_TOKEN = '8594637278:AAHFGZQ01KH5XlhsySbOxkkCuE4hxRGk_sY'; 
-const WEBAPP_URL = 'https://tzldg-77-238-251-208.a.free.pinggy.link'; 
+const config = configDotenv().parsed!;
+const BOT_TOKEN = config.BOT_TOKEN; 
+const WEBAPP_URL = config.WEBAPP_URL; 
+const PORT = config.PORT;
 
 const app = express();
 const httpServer = createServer(app);
