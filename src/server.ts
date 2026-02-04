@@ -104,7 +104,8 @@ if (BOT_TOKEN) {
 // --- MIDDLEWARE ---
 app.use(express.json());
 app.use(cors());
-app.use(express.static(path.join(__dirname, "../public")));
+//app.use(express.static(path.join(__dirname, "../public")));
+app.set("view engine", "ejs");
 
 app.use((req, res, next) => {
   res.set("Cache-Control", "no-store, no-cache, must-revalidate, private");
@@ -266,6 +267,11 @@ db.serialize(async () => {
     "sanitary_day",
     "false",
   ]);
+});
+
+// --- INDEX PAGE ---
+app.get("/", async (req, res) => {
+  res.render("index", { apiUrl: `${WEBAPP_URL}/api` });
 });
 
 // --- API ROUTES ---
