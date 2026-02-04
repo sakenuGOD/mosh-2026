@@ -1,715 +1,1240 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru" class="antialiased">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
     <title>canteen</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: { 
-                        brand: { 500: '#FF6B00', 600: '#E65100' }, 
-                        dark: { 800: '#1e293b', 900: '#0f172a', 950: '#020617' } 
-                    },
-                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'bounce-in': 'bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)' },
-                    keyframes: { 
-                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                        bounceIn: { '0%': { transform: 'scale(0.3)', opacity: '0' }, '50%': { transform: 'scale(1.05)' }, '70%': { transform: 'scale(0.9)' }, '100%': { transform: 'scale(1)', opacity: '1' } }
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              brand: { 500: "#FF6B00", 600: "#E65100" },
+              dark: { 800: "#1e293b", 900: "#0f172a", 950: "#020617" },
+            },
+            animation: {
+              "fade-in": "fadeIn 0.3s ease-out",
+              "bounce-in":
+                "bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+            },
+            keyframes: {
+              fadeIn: {
+                "0%": { opacity: "0", transform: "translateY(10px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+              bounceIn: {
+                "0%": { transform: "scale(0.3)", opacity: "0" },
+                "50%": { transform: "scale(1.05)" },
+                "70%": { transform: "scale(0.9)" },
+                "100%": { transform: "scale(1)", opacity: "1" },
+              },
+            },
+          },
+        },
+      };
     </script>
-    
+
     <!-- Fonts & Libs -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"
+    ></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        [x-cloak] { display: none !important; }
-        .hide-scroll::-webkit-scrollbar { display: none; }
-        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .dark .custom-scroll::-webkit-scrollbar-thumb { background: #475569; }
-        
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .dark .glass { background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(255,255,255,0.1); }
-        
-        .loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
-        .loader-dark { border-color: rgba(0,0,0,0.1); border-top-color: #000; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      body {
+        font-family: "Inter", sans-serif;
+        -webkit-tap-highlight-color: transparent;
+      }
+      [x-cloak] {
+        display: none !important;
+      }
+      .hide-scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .custom-scroll::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+      }
+      .custom-scroll::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+      }
+      .dark .custom-scroll::-webkit-scrollbar-thumb {
+        background: #475569;
+      }
+
+      .glass {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+      .dark .glass {
+        background: rgba(15, 23, 42, 0.95);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .loader {
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid #fff;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+      }
+      .loader-dark {
+        border-color: rgba(0, 0, 0, 0.1);
+        border-top-color: #000;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
     </style>
-</head>
+  </head>
 
-<body x-data="app()" x-init="initApp()" :class="{ 'dark': isDark }" class="bg-gray-100 text-gray-900 dark:bg-dark-950 dark:text-gray-50 transition-colors duration-300 h-[100dvh] flex flex-col overflow-hidden">
-
+  <body
+    x-data="app()"
+    x-init="initApp()"
+    :class="{ 'dark': isDark }"
+    class="bg-gray-100 text-gray-900 dark:bg-dark-950 dark:text-gray-50 transition-colors duration-300 h-[100dvh] flex flex-col overflow-hidden"
+  >
     <!-- === GLOBAL LOADER === -->
-    <div x-show="globalLoading" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center">
-        <div class="bg-white dark:bg-dark-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center">
-            <div class="loader loader-dark dark:border-white/20 dark:border-t-brand-500 w-10 h-10 mb-3"></div>
-            <div class="text-sm font-bold">Загрузка...</div>
-        </div>
+    <div
+      x-show="globalLoading"
+      class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center"
+    >
+      <div
+        class="bg-white dark:bg-dark-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center"
+      >
+        <div
+          class="loader loader-dark dark:border-white/20 dark:border-t-brand-500 w-10 h-10 mb-3"
+        ></div>
+        <div class="text-sm font-bold">Загрузка...</div>
+      </div>
     </div>
-    
+
     <!-- === SANITARY DAY BLOCKER (Для студентов) === -->
-    <div x-show="isSanitaryDay && user?.role === 'STUDENT'" class="fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center text-white animate-fade-in" x-cloak>
-        <div class="text-8xl mb-6 animate-bounce">🧼</div>
-        <h1 class="text-3xl font-black mb-4">Санитарный День</h1>
-        <p class="text-lg opacity-80 max-w-xs mx-auto">Столовая сегодня закрыта на генеральную уборку. Приходите завтра!</p>
-        <button @click="logout" class="mt-12 px-8 py-3 bg-white/10 rounded-xl font-bold hover:bg-white/20 transition border border-white/20">Выйти из аккаунта</button>
+    <div
+      x-show="isSanitaryDay && user?.role === 'STUDENT'"
+      class="fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center text-white animate-fade-in"
+      x-cloak
+    >
+      <div class="text-8xl mb-6 animate-bounce">🧼</div>
+      <h1 class="text-3xl font-black mb-4">Санитарный День</h1>
+      <p class="text-lg opacity-80 max-w-xs mx-auto">
+        Столовая сегодня закрыта на генеральную уборку. Приходите завтра!
+      </p>
+      <button
+        @click="logout"
+        class="mt-12 px-8 py-3 bg-white/10 rounded-xl font-bold hover:bg-white/20 transition border border-white/20"
+      >
+        Выйти из аккаунта
+      </button>
     </div>
 
     <!-- === NOTIFICATIONS === -->
-    <div class="fixed top-6 left-0 right-0 z-[90] flex justify-center pointer-events-none">
-        <div x-show="notification.show" x-transition.move.top 
-             class="bg-dark-900 text-white dark:bg-white dark:text-black px-6 py-3 rounded-full shadow-xl text-sm font-bold flex items-center gap-3 border border-white/10">
-            <span class="text-xl" x-text="notification.icon"></span>
-            <span x-text="notification.text"></span>
-        </div>
+    <div
+      class="fixed top-6 left-0 right-0 z-[90] flex justify-center pointer-events-none"
+    >
+      <div
+        x-show="notification.show"
+        x-transition.move.top
+        class="bg-dark-900 text-white dark:bg-white dark:text-black px-6 py-3 rounded-full shadow-xl text-sm font-bold flex items-center gap-3 border border-white/10"
+      >
+        <span class="text-xl" x-text="notification.icon"></span>
+        <span x-text="notification.text"></span>
+      </div>
     </div>
 
     <!-- === 1. AUTH SCREEN === -->
-    <div x-show="view === 'AUTH'" x-transition class="flex-1 flex flex-col items-center justify-center p-6 relative bg-white dark:bg-dark-950 overflow-y-auto">
-        <div class="w-full max-w-sm z-10 py-10">
-            <div class="text-center mb-10">
-                <div class="w-24 h-24 bg-brand-500 rounded-[2rem] mx-auto flex items-center justify-center text-5xl shadow-2xl shadow-brand-500/30 mb-6 animate-bounce-in">🍱</div>
-                <h1 class="text-3xl font-black mb-2 dark:text-white">Столовая</h1>
-                <p class="text-gray-400 font-medium">Вход в систему</p>
-            </div>
-
-            <div class="bg-gray-100 dark:bg-dark-900 p-1 rounded-2xl mb-6 flex">
-                <button @click="authMode = 'login'" :class="authMode === 'login' ? 'bg-white dark:bg-dark-800 shadow-md' : 'text-gray-500'" class="flex-1 py-3 rounded-xl font-bold text-sm transition-all">Вход</button>
-                <button @click="authMode = 'register'" :class="authMode === 'register' ? 'bg-white dark:bg-dark-800 shadow-md' : 'text-gray-500'" class="flex-1 py-3 rounded-xl font-bold text-sm transition-all">Регистрация</button>
-            </div>
-
-            <!-- LOGIN -->
-            <div x-show="authMode === 'login'" class="space-y-4 animate-fade-in">
-                <input x-model="authForm.login" type="text" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white font-medium" placeholder="Логин">
-                <input x-model="authForm.password" type="password" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white font-medium" placeholder="Пароль">
-                <button @click="login" class="w-full py-4 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition-all mt-4">Войти</button>
-            </div>
-            
-            <!-- REGISTER -->
-            <div x-show="authMode === 'register'" class="space-y-4 animate-fade-in" x-cloak>
-                <input x-model="regForm.name" type="text" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white" placeholder="Имя Фамилия">
-                <input x-model="regForm.login" type="text" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white" placeholder="Придумайте Логин">
-                <input x-model="regForm.password" type="password" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white" placeholder="Пароль">
-                <button @click="register" class="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition-all mt-4">Создать аккаунт</button>
-            </div>
+    <div
+      x-show="view === 'AUTH'"
+      x-transition
+      class="flex-1 flex flex-col items-center justify-center p-6 relative bg-white dark:bg-dark-950 overflow-y-auto"
+    >
+      <div class="w-full max-w-sm z-10 py-10">
+        <div class="text-center mb-10">
+          <div
+            class="w-24 h-24 bg-brand-500 rounded-[2rem] mx-auto flex items-center justify-center text-5xl shadow-2xl shadow-brand-500/30 mb-6 animate-bounce-in"
+          >
+            🍱
+          </div>
+          <h1 class="text-3xl font-black mb-2 dark:text-white">Столовая</h1>
+          <p class="text-gray-400 font-medium">Вход в систему</p>
         </div>
+
+        <div class="bg-gray-100 dark:bg-dark-900 p-1 rounded-2xl mb-6 flex">
+          <button
+            @click="authMode = 'login'"
+            :class="authMode === 'login' ? 'bg-white dark:bg-dark-800 shadow-md' : 'text-gray-500'"
+            class="flex-1 py-3 rounded-xl font-bold text-sm transition-all"
+          >
+            Вход
+          </button>
+          <button
+            @click="authMode = 'register'"
+            :class="authMode === 'register' ? 'bg-white dark:bg-dark-800 shadow-md' : 'text-gray-500'"
+            class="flex-1 py-3 rounded-xl font-bold text-sm transition-all"
+          >
+            Регистрация
+          </button>
+        </div>
+
+        <!-- LOGIN -->
+        <div x-show="authMode === 'login'" class="space-y-4 animate-fade-in">
+          <input
+            x-model="authForm.login"
+            type="text"
+            class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white font-medium"
+            placeholder="Логин"
+          />
+          <input
+            x-model="authForm.password"
+            type="password"
+            class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white font-medium"
+            placeholder="Пароль"
+          />
+          <button
+            @click="login"
+            class="w-full py-4 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition-all mt-4"
+          >
+            Войти
+          </button>
+        </div>
+
+        <!-- REGISTER -->
+        <div
+          x-show="authMode === 'register'"
+          class="space-y-4 animate-fade-in"
+          x-cloak
+        >
+          <input
+            x-model="regForm.name"
+            type="text"
+            class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white"
+            placeholder="Имя Фамилия"
+          />
+          <input
+            x-model="regForm.login"
+            type="text"
+            class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white"
+            placeholder="Придумайте Логин"
+          />
+          <input
+            x-model="regForm.password"
+            type="password"
+            class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white"
+            placeholder="Пароль"
+          />
+          <button
+            @click="register"
+            class="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition-all mt-4"
+          >
+            Создать аккаунт
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- === 2. APP INTERFACE === -->
-    <div x-show="view === 'APP'" x-cloak class="flex-1 flex flex-col h-full relative overflow-hidden">
-        
-        <!-- HEADER -->
-        <div class="glass flex-none z-30 px-4 py-3 flex justify-between items-center shadow-sm">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-red-500 flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0" x-text="user?.name?.[0]"></div>
-                <div class="min-w-0">
-                    <div class="font-bold text-sm leading-tight dark:text-white truncate" x-text="user?.name"></div>
-                    <div class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider" x-text="roles[user?.role]"></div>
-                </div>
-            </div>
-            
-            <div class="flex gap-3 items-center">
-                <!-- Кнопка Санитарный день (Только Админ) -->
-                <div x-show="user?.role === 'ADMIN'" class="flex flex-col items-end mr-2">
-                    <span class="text-[9px] font-bold uppercase tracking-wider mb-1" :class="isSanitaryDay ? 'text-red-500' : 'text-gray-400'" x-text="isSanitaryDay ? '⛔️ Закрыто' : '✅ Открыто'"></span>
-                    <button @click="toggleSanitary" class="w-10 h-5 rounded-full relative transition-colors duration-300"
-                        :class="isSanitaryDay ? 'bg-red-500' : 'bg-gray-300 dark:bg-dark-700'">
-                        <div class="w-3 h-3 bg-white rounded-full absolute top-1 transition-all duration-300 shadow-sm"
-                             :class="isSanitaryDay ? 'left-6' : 'left-1'"></div>
-                    </button>
-                </div>
-
-                <div class="flex gap-2 shrink-0">
-                    <button @click="toggleTheme" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-dark-800 dark:text-white flex items-center justify-center transition">
-                        <span x-show="!isDark">🌙</span><span x-show="isDark">☀️</span>
-                    </button>
-                    <button @click="logout" class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center">🚪</button>
-                </div>
-            </div>
+    <div
+      x-show="view === 'APP'"
+      x-cloak
+      class="flex-1 flex flex-col h-full relative overflow-hidden"
+    >
+      <!-- HEADER -->
+      <div
+        class="glass flex-none z-30 px-4 py-3 flex justify-between items-center shadow-sm"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-red-500 flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0"
+            x-text="user?.name?.[0]"
+          ></div>
+          <div class="min-w-0">
+            <div
+              class="font-bold text-sm leading-tight dark:text-white truncate"
+              x-text="user?.name"
+            ></div>
+            <div
+              class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider"
+              x-text="roles[user?.role]"
+            ></div>
+          </div>
         </div>
 
-        <!-- === STUDENT VIEW === -->
-        <div x-show="user?.role === 'STUDENT'" class="flex-1 overflow-y-auto custom-scroll relative bg-gray-100 dark:bg-dark-950 pb-32 pt-4">
-            
-            <!-- MENU TAB -->
-            <div x-show="studentTab === 'menu'" class="px-4 space-y-6 animate-fade-in">
-                
-                <!-- Balance Card -->
-                <div class="bg-dark-900 dark:bg-brand-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden transform transition hover:scale-[1.01]">
-                    <div class="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-                    <div class="relative z-10">
-                        <div class="flex justify-between items-start mb-6">
-                            <div>
-                                <div class="text-xs text-white/60 font-medium mb-1">Баланс</div>
-                                <div class="text-4xl font-black tracking-tight" x-text="formatPrice(user?.balance)"></div>
-                            </div>
-                            <button @click="modals.topUp = true" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 backdrop-blur-sm">
-                                <span>+</span> Пополнить
-                            </button>
-                        </div>
-                        <div class="border-t border-white/10 pt-4">
-                            <template x-if="hasActiveSub">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_#4ade80]"></div>
-                                    <div>
-                                        <div class="text-xs font-bold uppercase tracking-wide text-green-300">PRO Абонемент</div>
-                                        <div class="text-[10px] opacity-70">До: <span x-text="user.subscription_end"></span></div>
-                                    </div>
-                                </div>
-                            </template>
-                            <template x-if="!hasActiveSub">
-                                <button @click="buySubscription" class="bg-gradient-to-r from-purple-500 to-indigo-500 w-full py-2 rounded-xl text-xs font-bold shadow-lg">Купить безлимит (3000₽)</button>
-                            </template>
-                        </div>
-                    </div>
+        <div class="flex gap-3 items-center">
+          <!-- Кнопка Санитарный день (Только Админ) -->
+          <div
+            x-show="user?.role === 'ADMIN'"
+            class="flex flex-col items-end mr-2"
+          >
+            <span
+              class="text-[9px] font-bold uppercase tracking-wider mb-1"
+              :class="isSanitaryDay ? 'text-red-500' : 'text-gray-400'"
+              x-text="isSanitaryDay ? '⛔️ Закрыто' : '✅ Открыто'"
+            ></span>
+            <button
+              @click="toggleSanitary"
+              class="w-10 h-5 rounded-full relative transition-colors duration-300"
+              :class="isSanitaryDay ? 'bg-red-500' : 'bg-gray-300 dark:bg-dark-700'"
+            >
+              <div
+                class="w-3 h-3 bg-white rounded-full absolute top-1 transition-all duration-300 shadow-sm"
+                :class="isSanitaryDay ? 'left-6' : 'left-1'"
+              ></div>
+            </button>
+          </div>
+
+          <div class="flex gap-2 shrink-0">
+            <button
+              @click="toggleTheme"
+              class="w-10 h-10 rounded-full bg-gray-200 dark:bg-dark-800 dark:text-white flex items-center justify-center transition"
+            >
+              <span x-show="!isDark">🌙</span><span x-show="isDark">☀️</span>
+            </button>
+            <button
+              @click="logout"
+              class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center"
+            >
+              🚪
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- === STUDENT VIEW === -->
+      <div
+        x-show="user?.role === 'STUDENT'"
+        class="flex-1 overflow-y-auto custom-scroll relative bg-gray-100 dark:bg-dark-950 pb-32 pt-4"
+      >
+        <!-- MENU TAB -->
+        <div
+          x-show="studentTab === 'menu'"
+          class="px-4 space-y-6 animate-fade-in"
+        >
+          <!-- Balance Card -->
+          <div
+            class="bg-dark-900 dark:bg-brand-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden transform transition hover:scale-[1.01]"
+          >
+            <div
+              class="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"
+            ></div>
+            <div class="relative z-10">
+              <div class="flex justify-between items-start mb-6">
+                <div>
+                  <div class="text-xs text-white/60 font-medium mb-1">
+                    Баланс
+                  </div>
+                  <div
+                    class="text-4xl font-black tracking-tight"
+                    x-text="formatPrice(user?.balance)"
+                  ></div>
                 </div>
-
-                <!-- Categories -->
-                <div class="flex gap-2 overflow-x-auto hide-scroll pb-1 -mx-4 px-4">
-                    <template x-for="cat in categories" :key="cat.id">
-                        <button @click="activeCat = cat.id" 
-                            :class="activeCat === cat.id ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/25' : 'bg-white dark:bg-dark-800 text-gray-500 dark:text-gray-400'"
-                            class="px-5 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap transition-all" 
-                            x-text="cat.name"></button>
-                    </template>
-                </div>
-
-                <!-- Products Grid -->
-                <div class="grid grid-cols-1 gap-4">
-                    <template x-for="p in filteredProducts" :key="p.id">
-                        <div class="bg-white dark:bg-dark-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-700 flex gap-4 transition-all active:scale-[0.98]" @click="addToCart(p)">
-                            <div class="w-24 h-24 bg-gray-50 dark:bg-dark-900 rounded-xl flex items-center justify-center text-5xl shrink-0">
-                                <span x-text="p.image"></span>
-                            </div>
-                            <div class="flex-1 flex flex-col py-1">
-                                <div class="flex justify-between items-start">
-                                    <h3 class="font-bold text-base leading-tight dark:text-gray-100" x-text="p.name"></h3>
-                                    <div class="text-brand-600 dark:text-brand-500 font-black text-lg" x-text="p.price + '₽'"></div>
-                                </div>
-                                <div class="text-xs text-gray-400 mt-1" x-text="p.desc || 'Вкусно и полезно'"></div>
-                                <div class="text-xs text-red-400 font-bold" x-show="p.stock < 10" x-text="'Осталось: ' + p.stock"></div>
-                                <div class="mt-auto flex justify-between items-end">
-                                    <span class="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-dark-900 px-2 py-1 rounded" x-text="p.calories + ' ккал'"></span>
-                                    <button class="w-8 h-8 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold flex items-center justify-center shadow-md">+</button>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-            <!-- ORDERS TAB -->
-            <div x-show="studentTab === 'orders'" class="px-4 space-y-4 animate-fade-in">
-                <h2 class="font-bold text-2xl mb-4 dark:text-white">Мои заказы</h2>
-                <template x-for="order in myOrders" :key="order.id">
-                    <div class="bg-white dark:bg-dark-800 rounded-2xl shadow border border-gray-100 dark:border-dark-700 p-5 overflow-hidden relative">
-                        <!-- Status Badge -->
-                        <div class="flex justify-between items-center mb-4 relative z-10">
-                            <span class="font-black text-xl dark:text-white">#<span x-text="order.id"></span></span>
-                            <span class="px-3 py-1 rounded-lg text-xs font-bold text-white capitalize shadow-sm"
-                                    :class="statusColors[order.status]" x-text="statusText[order.status]"></span>
-                        </div>
-
-                        <!-- Items -->
-                        <div class="space-y-1 mb-4 border-l-2 border-gray-100 dark:border-dark-700 pl-3 relative z-10">
-                            <template x-for="item in order.items">
-                                <div class="flex justify-between text-sm dark:text-gray-300">
-                                    <span x-text="item.name"></span>
-                                    <span class="font-bold opacity-70">x<span x-text="item.quantity"></span></span>
-                                </div>
-                            </template>
-                        </div>
-
-                        <!-- Action for READY -->
-                        <div x-show="order.status === 'ready'" class="mt-4 pt-4 border-t dark:border-dark-700 animate-pulse">
-                            <button @click="openRatingModal(order.id)" 
-                                class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-all">
-                                👋 Я забрал заказ!
-                            </button>
-                            <div class="text-[10px] text-center text-gray-400 mt-2">Нажмите, чтобы подтвердить получение</div>
-                        </div>
-
-                        <!-- Completed Rating -->
-                        <div x-show="order.status === 'completed'" class="flex items-center gap-1 text-yellow-400 text-sm font-bold mt-2">
-                            <span>Ваша оценка:</span>
-                            <span x-text="'★'.repeat(order.rating || 5)"></span>
-                        </div>
-
-                        <div class="text-[10px] text-gray-300 dark:text-gray-600 absolute bottom-3 right-5" x-text="formatTime(order.date)"></div>
-                    </div>
-                </template>
-                <div x-show="myOrders.length === 0" class="text-center text-gray-400 py-10">История пуста</div>
-            </div>
-
-            <!-- CART FLOAT -->
-            <div x-show="cart.length > 0 && studentTab === 'menu'" class="fixed bottom-20 left-4 right-4 z-[40]">
-                <div class="bg-dark-900 dark:bg-white text-white dark:text-black p-4 rounded-3xl shadow-2xl flex flex-col gap-3">
-                    <div class="flex justify-between items-center px-2">
-                        <span class="text-sm font-medium opacity-80">Итого:</span>
-                        <div class="flex items-end gap-2">
-                            <span class="text-xl font-black" :class="{'line-through opacity-50 text-sm': hasActiveSub}" x-text="cartTotal + ' ₽'"></span>
-                            <span x-show="hasActiveSub" class="text-xl font-black text-brand-500">0 ₽</span>
-                        </div>
-                    </div>
-                    <button @click="placeOrder" class="w-full py-3.5 rounded-2xl font-bold text-sm shadow-lg flex justify-center items-center"
-                        :class="hasActiveSub ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white' : 'bg-brand-500 text-white'">
-                        <span x-text="hasActiveSub ? 'Оплатить Абонементом' : 'Оплатить Заказ'"></span>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- NAV BAR -->
-            <div class="fixed bottom-0 w-full bg-white dark:bg-dark-900 border-t dark:border-dark-800 pb-safe pt-2 px-6 flex justify-around items-center z-50 h-[70px]">
-                <button @click="studentTab='menu'" :class="studentTab=='menu' ? 'text-brand-500' : 'text-gray-400'" class="flex flex-col items-center gap-1 w-16">
-                    <span class="text-2xl">🍔</span><span class="text-[10px] font-bold">Меню</span>
+                <button
+                  @click="modals.topUp = true"
+                  class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 backdrop-blur-sm"
+                >
+                  <span>+</span> Пополнить
                 </button>
-                <button @click="studentTab='orders'" :class="studentTab=='orders' ? 'text-brand-500' : 'text-gray-400'" class="flex flex-col items-center gap-1 w-16 relative">
-                    <span class="text-2xl">🧾</span><span class="text-[10px] font-bold">Заказы</span>
-                    <div x-show="myOrders.some(o=>o.status==='ready')" class="absolute top-0 right-2 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-dark-900"></div>
-                </button>
-            </div>
-        </div>
-
-        <!-- === COOK VIEW === -->
-        <div x-show="user?.role === 'COOK'" class="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-dark-950">
-            <div class="p-4 border-b dark:border-dark-800 bg-white dark:bg-dark-900 flex justify-between items-center shrink-0">
-                <h2 class="font-bold text-xl dark:text-white">Активные заказы</h2>
-                <div class="text-xs font-bold bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-full" x-text="'Очередь: ' + activeOrders.length"></div>
-            </div>
-            
-            <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scroll pb-24">
-                <template x-for="order in activeOrders" :key="order.id">
-                    <div class="bg-white dark:bg-[#1E293B] rounded-xl shadow-md p-5 border-l-4" 
-                         :class="order.status === 'pending' ? 'border-l-brand-500' : 'border-l-green-500'">
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <div class="text-2xl font-black dark:text-white">#<span x-text="order.id"></span></div>
-                                <div class="text-sm text-gray-500 dark:text-gray-300 font-bold" x-text="order.user_name || order.userName"></div>
-                            </div>
-                            <div class="text-xs bg-gray-100 dark:bg-dark-900 px-2 py-1 rounded dark:text-gray-300 font-mono" x-text="formatTime(order.date)"></div>
-                        </div>
-                        <div class="space-y-2 mb-4 bg-gray-50 dark:bg-dark-900 p-3 rounded-lg border border-gray-100 dark:border-dark-700">
-                            <template x-for="item in order.items">
-                                <div class="flex justify-between items-center text-sm dark:text-gray-200">
-                                    <span class="font-medium" x-text="item.name"></span>
-                                    <span class="font-bold bg-white dark:bg-dark-800 px-2 py-0.5 rounded border dark:border-dark-700">x<span x-text="item.quantity"></span></span>
-                                </div>
-                            </template>
-                        </div>
-                        <div class="flex gap-3">
-                            <button x-show="order.status === 'pending'" @click="updateOrderStatus(order.id, 'ready')" 
-                                    class="flex-1 bg-brand-600 text-white py-3 rounded-lg font-bold shadow-md active:scale-95 transition">✅ Готов</button>
-                            <div x-show="order.status === 'ready'" class="flex-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 py-3 rounded-lg font-bold text-center border border-green-200 dark:border-green-800 animate-pulse">
-                                ⏳ Ждем ученика...
-                            </div>
-                        </div>
+              </div>
+              <div class="border-t border-white/10 pt-4">
+                <template x-if="hasActiveSub">
+                  <div class="flex items-center gap-2">
+                    <div
+                      class="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_#4ade80]"
+                    ></div>
+                    <div>
+                      <div
+                        class="text-xs font-bold uppercase tracking-wide text-green-300"
+                      >
+                        PRO Абонемент
+                      </div>
+                      <div class="text-[10px] opacity-70">
+                        До: <span x-text="user.subscription_end"></span>
+                      </div>
                     </div>
+                  </div>
                 </template>
-                <div x-show="activeOrders.length === 0" class="text-center text-gray-400 py-10">Нет активных заказов</div>
+                <template x-if="!hasActiveSub">
+                  <button
+                    @click="buySubscription"
+                    class="bg-gradient-to-r from-purple-500 to-indigo-500 w-full py-2 rounded-xl text-xs font-bold shadow-lg"
+                  >
+                    Купить безлимит (3000₽)
+                  </button>
+                </template>
+              </div>
             </div>
+          </div>
 
-            <div class="bg-white dark:bg-dark-900 p-4 border-t dark:border-dark-800 flex gap-3 shrink-0 shadow-lg">
-                <button @click="modals.supply = true" class="flex-1 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl font-bold text-sm border border-blue-100 dark:border-blue-900">🚛 Заказать продукты</button>
-            </div>
+          <!-- Categories -->
+          <div class="flex gap-2 overflow-x-auto hide-scroll pb-1 -mx-4 px-4">
+            <template x-for="cat in categories" :key="cat.id">
+              <button
+                @click="activeCat = cat.id"
+                :class="activeCat === cat.id ? 'bg-brand-500 text-white shadow-lg shadow-brand-500/25' : 'bg-white dark:bg-dark-800 text-gray-500 dark:text-gray-400'"
+                class="px-5 py-2.5 rounded-2xl text-sm font-bold whitespace-nowrap transition-all"
+                x-text="cat.name"
+              ></button>
+            </template>
+          </div>
+
+          <!-- Products Grid -->
+          <div class="grid grid-cols-1 gap-4">
+            <template x-for="p in filteredProducts" :key="p.id">
+              <div
+                class="bg-white dark:bg-dark-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-700 flex gap-4 transition-all active:scale-[0.98]"
+                @click="addToCart(p)"
+              >
+                <div
+                  class="w-24 h-24 bg-gray-50 dark:bg-dark-900 rounded-xl flex items-center justify-center text-5xl shrink-0"
+                >
+                  <span x-text="p.image"></span>
+                </div>
+                <div class="flex-1 flex flex-col py-1">
+                  <div class="flex justify-between items-start">
+                    <h3
+                      class="font-bold text-base leading-tight dark:text-gray-100"
+                      x-text="p.name"
+                    ></h3>
+                    <div
+                      class="text-brand-600 dark:text-brand-500 font-black text-lg"
+                      x-text="p.price + '₽'"
+                    ></div>
+                  </div>
+                  <div
+                    class="text-xs text-gray-400 mt-1"
+                    x-text="p.desc || 'Вкусно и полезно'"
+                  ></div>
+                  <div
+                    class="text-xs text-red-400 font-bold"
+                    x-show="p.stock < 10"
+                    x-text="'Осталось: ' + p.stock"
+                  ></div>
+                  <div class="mt-auto flex justify-between items-end">
+                    <span
+                      class="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-dark-900 px-2 py-1 rounded"
+                      x-text="p.calories + ' ккал'"
+                    ></span>
+                    <button
+                      class="w-8 h-8 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold flex items-center justify-center shadow-md"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
 
-        <!-- === ADMIN VIEW === -->
-        <div x-show="user?.role === 'ADMIN'" class="flex-1 overflow-y-auto bg-gray-50 dark:bg-dark-950 p-6 pb-20 custom-scroll">
-            <h2 class="text-3xl font-black mb-6 dark:text-white">Админ Панель</h2>
+        <!-- ORDERS TAB -->
+        <div
+          x-show="studentTab === 'orders'"
+          class="px-4 space-y-4 animate-fade-in"
+        >
+          <h2 class="font-bold text-2xl mb-4 dark:text-white">Мои заказы</h2>
+          <template x-for="order in myOrders" :key="order.id">
+            <div
+              class="bg-white dark:bg-dark-800 rounded-2xl shadow border border-gray-100 dark:border-dark-700 p-5 overflow-hidden relative"
+            >
+              <!-- Status Badge -->
+              <div class="flex justify-between items-center mb-4 relative z-10">
+                <span class="font-black text-xl dark:text-white"
+                  >#<span x-text="order.id"></span
+                ></span>
+                <span
+                  class="px-3 py-1 rounded-lg text-xs font-bold text-white capitalize shadow-sm"
+                  :class="statusColors[order.status]"
+                  x-text="statusText[order.status]"
+                ></span>
+              </div>
 
-            <!-- Stats & Chart -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                <!-- Money & Rating -->
-                <div class="space-y-4">
-                    <div class="bg-white dark:bg-dark-800 p-5 rounded-2xl shadow-sm border dark:border-dark-700">
-                        <div class="text-gray-400 text-xs font-bold uppercase mb-1">Выручка</div>
-                        <div class="text-3xl font-black text-green-500" x-text="adminData.revenue + ' ₽'"></div>
-                    </div>
-                    <div class="bg-white dark:bg-dark-800 p-5 rounded-2xl shadow-sm border dark:border-dark-700">
-                        <div class="text-gray-400 text-xs font-bold uppercase mb-1">Рейтинг столовой</div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-3xl font-black text-yellow-500" x-text="adminData.avgRating"></span>
-                            <span class="text-2xl">⭐️</span>
-                        </div>
-                    </div>
-                </div>
+              <!-- Items -->
+              <div
+                class="space-y-1 mb-4 border-l-2 border-gray-100 dark:border-dark-700 pl-3 relative z-10"
+              >
+                <template x-for="item in order.items">
+                  <div class="flex justify-between text-sm dark:text-gray-300">
+                    <span x-text="item.name"></span>
+                    <span class="font-bold opacity-70"
+                      >x<span x-text="item.quantity"></span
+                    ></span>
+                  </div>
+                </template>
+              </div>
 
-                <!-- Chart -->
-                <div class="bg-white dark:bg-dark-800 p-5 rounded-2xl shadow-sm border dark:border-dark-700 flex flex-col items-center">
-                    <h3 class="font-bold text-sm mb-4 dark:text-white self-start">Продажи по категориям</h3>
-                    <div class="w-40 h-40 relative">
-                        <canvas id="revenueChart"></canvas>
-                    </div>
+              <!-- Action for READY -->
+              <div
+                x-show="order.status === 'ready'"
+                class="mt-4 pt-4 border-t dark:border-dark-700 animate-pulse"
+              >
+                <button
+                  @click="openRatingModal(order.id)"
+                  class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-bold shadow-lg active:scale-95 transition-all"
+                >
+                  👋 Я забрал заказ!
+                </button>
+                <div class="text-[10px] text-center text-gray-400 mt-2">
+                  Нажмите, чтобы подтвердить получение
                 </div>
+              </div>
+
+              <!-- Completed Rating -->
+              <div
+                x-show="order.status === 'completed'"
+                class="flex items-center gap-1 text-yellow-400 text-sm font-bold mt-2"
+              >
+                <span>Ваша оценка:</span>
+                <span x-text="'★'.repeat(order.rating || 5)"></span>
+              </div>
+
+              <div
+                class="text-[10px] text-gray-300 dark:text-gray-600 absolute bottom-3 right-5"
+                x-text="formatTime(order.date)"
+              ></div>
             </div>
-
-            <!-- Supply Requests -->
-            <div class="bg-white dark:bg-dark-800 p-5 rounded-2xl shadow-sm border dark:border-dark-700 mb-8">
-                <h3 class="font-bold mb-4 dark:text-white flex justify-between items-center">
-                    <span>Заявки на закупку</span>
-                    <span class="text-[10px] bg-blue-100 text-blue-800 px-2 py-1 rounded font-bold" x-text="adminData.supplies.filter(s=>s.status==='pending').length + ' новых'"></span>
-                </h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="text-gray-400 border-b dark:border-dark-700"><tr><th class="pb-2">Товар</th><th class="pb-2">Кол-во</th><th class="pb-2">Действие</th></tr></thead>
-                        <tbody class="divide-y dark:divide-dark-700">
-                            <template x-for="sup in adminData.supplies" :key="sup.id">
-                                <tr>
-                                    <td class="py-3 dark:text-white font-medium" x-text="sup.product_name"></td>
-                                    <td class="py-3 dark:text-gray-300" x-text="sup.amount || '—'"></td>
-                                    <td class="py-3">
-                                        <button x-show="sup.status === 'pending'" @click="approveSupply(sup.id)" class="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-xs font-bold hover:bg-green-200 transition">Одобрить</button>
-                                        <span x-show="sup.status !== 'pending'" class="text-gray-400 text-xs italic">Выполнено</span>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+          </template>
+          <div
+            x-show="myOrders.length === 0"
+            class="text-center text-gray-400 py-10"
+          >
+            История пуста
+          </div>
         </div>
 
+        <!-- CART FLOAT -->
+        <div
+          x-show="cart.length > 0 && studentTab === 'menu'"
+          class="fixed bottom-20 left-4 right-4 z-[40]"
+        >
+          <div
+            class="bg-dark-900 dark:bg-white text-white dark:text-black p-4 rounded-3xl shadow-2xl flex flex-col gap-3"
+          >
+            <div class="flex justify-between items-center px-2">
+              <span class="text-sm font-medium opacity-80">Итого:</span>
+              <div class="flex items-end gap-2">
+                <span
+                  class="text-xl font-black"
+                  :class="{'line-through opacity-50 text-sm': hasActiveSub}"
+                  x-text="cartTotal + ' ₽'"
+                ></span>
+                <span
+                  x-show="hasActiveSub"
+                  class="text-xl font-black text-brand-500"
+                  >0 ₽</span
+                >
+              </div>
+            </div>
+            <button
+              @click="placeOrder"
+              class="w-full py-3.5 rounded-2xl font-bold text-sm shadow-lg flex justify-center items-center"
+              :class="hasActiveSub ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white' : 'bg-brand-500 text-white'"
+            >
+              <span
+                x-text="hasActiveSub ? 'Оплатить Абонементом' : 'Оплатить Заказ'"
+              ></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- NAV BAR -->
+        <div
+          class="fixed bottom-0 w-full bg-white dark:bg-dark-900 border-t dark:border-dark-800 pb-safe pt-2 px-6 flex justify-around items-center z-50 h-[70px]"
+        >
+          <button
+            @click="studentTab='menu'"
+            :class="studentTab=='menu' ? 'text-brand-500' : 'text-gray-400'"
+            class="flex flex-col items-center gap-1 w-16"
+          >
+            <span class="text-2xl">🍔</span
+            ><span class="text-[10px] font-bold">Меню</span>
+          </button>
+          <button
+            @click="studentTab='orders'"
+            :class="studentTab=='orders' ? 'text-brand-500' : 'text-gray-400'"
+            class="flex flex-col items-center gap-1 w-16 relative"
+          >
+            <span class="text-2xl">🧾</span
+            ><span class="text-[10px] font-bold">Заказы</span>
+            <div
+              x-show="myOrders.some(o=>o.status==='ready')"
+              class="absolute top-0 right-2 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-dark-900"
+            ></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- === COOK VIEW === -->
+      <div
+        x-show="user?.role === 'COOK'"
+        class="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-dark-950"
+      >
+        <div
+          class="p-4 border-b dark:border-dark-800 bg-white dark:bg-dark-900 flex justify-between items-center shrink-0"
+        >
+          <h2 class="font-bold text-xl dark:text-white">Активные заказы</h2>
+          <div
+            class="text-xs font-bold bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-full"
+            x-text="'Очередь: ' + activeOrders.length"
+          ></div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scroll pb-24">
+          <template x-for="order in activeOrders" :key="order.id">
+            <div
+              class="bg-white dark:bg-[#1E293B] rounded-xl shadow-md p-5 border-l-4"
+              :class="order.status === 'pending' ? 'border-l-brand-500' : 'border-l-green-500'"
+            >
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <div class="text-2xl font-black dark:text-white">
+                    #<span x-text="order.id"></span>
+                  </div>
+                  <div
+                    class="text-sm text-gray-500 dark:text-gray-300 font-bold"
+                    x-text="order.user_name || order.userName"
+                  ></div>
+                </div>
+                <div
+                  class="text-xs bg-gray-100 dark:bg-dark-900 px-2 py-1 rounded dark:text-gray-300 font-mono"
+                  x-text="formatTime(order.date)"
+                ></div>
+              </div>
+              <div
+                class="space-y-2 mb-4 bg-gray-50 dark:bg-dark-900 p-3 rounded-lg border border-gray-100 dark:border-dark-700"
+              >
+                <template x-for="item in order.items">
+                  <div
+                    class="flex justify-between items-center text-sm dark:text-gray-200"
+                  >
+                    <span class="font-medium" x-text="item.name"></span>
+                    <span
+                      class="font-bold bg-white dark:bg-dark-800 px-2 py-0.5 rounded border dark:border-dark-700"
+                      >x<span x-text="item.quantity"></span
+                    ></span>
+                  </div>
+                </template>
+              </div>
+              <div class="flex gap-3">
+                <button
+                  x-show="order.status === 'pending'"
+                  @click="updateOrderStatus(order.id, 'ready')"
+                  class="flex-1 bg-brand-600 text-white py-3 rounded-lg font-bold shadow-md active:scale-95 transition"
+                >
+                  ✅ Готов
+                </button>
+                <div
+                  x-show="order.status === 'ready'"
+                  class="flex-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 py-3 rounded-lg font-bold text-center border border-green-200 dark:border-green-800 animate-pulse"
+                >
+                  ⏳ Ждем ученика...
+                </div>
+              </div>
+            </div>
+          </template>
+          <div
+            x-show="activeOrders.length === 0"
+            class="text-center text-gray-400 py-10"
+          >
+            Нет активных заказов
+          </div>
+        </div>
+
+        <div
+          class="bg-white dark:bg-dark-900 p-4 border-t dark:border-dark-800 flex gap-3 shrink-0 shadow-lg"
+        >
+          <button
+            @click="modals.supply = true"
+            class="flex-1 py-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl font-bold text-sm border border-blue-100 dark:border-blue-900"
+          >
+            🚛 Заказать продукты
+          </button>
+        </div>
+      </div>
+
+      <!-- === ADMIN VIEW === -->
+      <div
+        x-show="user?.role === 'ADMIN'"
+        class="flex-1 overflow-y-auto bg-gray-50 dark:bg-dark-950 p-6 pb-20 custom-scroll"
+      >
+        <h2 class="text-3xl font-black mb-6 dark:text-white">Админ Панель</h2>
+
+        <!-- Stats & Chart -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <!-- Money & Rating -->
+          <div class="space-y-4">
+            <div
+              class="bg-white dark:bg-dark-800 p-5 rounded-2xl shadow-sm border dark:border-dark-700"
+            >
+              <div class="text-gray-400 text-xs font-bold uppercase mb-1">
+                Выручка
+              </div>
+              <div
+                class="text-3xl font-black text-green-500"
+                x-text="adminData.revenue + ' ₽'"
+              ></div>
+            </div>
+            <div
+              class="bg-white dark:bg-dark-800 p-5 rounded-2xl shadow-sm border dark:border-dark-700"
+            >
+              <div class="text-gray-400 text-xs font-bold uppercase mb-1">
+                Рейтинг столовой
+              </div>
+              <div class="flex items-center gap-2">
+                <span
+                  class="text-3xl font-black text-yellow-500"
+                  x-text="adminData.avgRating"
+                ></span>
+                <span class="text-2xl">⭐️</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart -->
+          <div
+            class="bg-white dark:bg-dark-800 p-5 rounded-2xl shadow-sm border dark:border-dark-700 flex flex-col items-center"
+          >
+            <h3 class="font-bold text-sm mb-4 dark:text-white self-start">
+              Продажи по категориям
+            </h3>
+            <div class="w-40 h-40 relative">
+              <canvas id="revenueChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Supply Requests -->
+        <div
+          class="bg-white dark:bg-dark-800 p-5 rounded-2xl shadow-sm border dark:border-dark-700 mb-8"
+        >
+          <h3
+            class="font-bold mb-4 dark:text-white flex justify-between items-center"
+          >
+            <span>Заявки на закупку</span>
+            <span
+              class="text-[10px] bg-blue-100 text-blue-800 px-2 py-1 rounded font-bold"
+              x-text="adminData.supplies.filter(s=>s.status==='pending').length + ' новых'"
+            ></span>
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+              <thead class="text-gray-400 border-b dark:border-dark-700">
+                <tr>
+                  <th class="pb-2">Товар</th>
+                  <th class="pb-2">Кол-во</th>
+                  <th class="pb-2">Действие</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y dark:divide-dark-700">
+                <template x-for="sup in adminData.supplies" :key="sup.id">
+                  <tr>
+                    <td
+                      class="py-3 dark:text-white font-medium"
+                      x-text="sup.product_name"
+                    ></td>
+                    <td
+                      class="py-3 dark:text-gray-300"
+                      x-text="sup.amount || '—'"
+                    ></td>
+                    <td class="py-3">
+                      <button
+                        x-show="sup.status === 'pending'"
+                        @click="approveSupply(sup.id)"
+                        class="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-xs font-bold hover:bg-green-200 transition"
+                      >
+                        Одобрить
+                      </button>
+                      <span
+                        x-show="sup.status !== 'pending'"
+                        class="text-gray-400 text-xs italic"
+                        >Выполнено</span
+                      >
+                    </td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- === MODALS === -->
-    
+
     <!-- Rating Modal -->
-    <div x-show="modals.rateOrder" class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" x-cloak>
-        <div class="bg-white dark:bg-dark-900 w-full max-w-sm rounded-3xl p-6 text-center animate-bounce-in" @click.outside="modals.rateOrder = false">
-            <h3 class="text-2xl font-black mb-2 dark:text-white">Как вам еда?</h3>
-            <p class="text-gray-500 text-sm mb-6">Оцените вкус и качество обслуживания</p>
-            
-            <div class="flex justify-center gap-2 mb-8">
-                <template x-for="i in 5">
-                    <button @click="ratingVal = i" class="text-4xl transition hover:scale-110 active:scale-90"
-                            :class="i <= ratingVal ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-700'">★</button>
-                </template>
-            </div>
-            
-            <button @click="confirmOrder" class="w-full py-3 bg-brand-600 text-white rounded-xl font-bold text-lg shadow-lg active:scale-95 transition">Отправить оценку</button>
+    <div
+      x-show="modals.rateOrder"
+      class="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      x-cloak
+    >
+      <div
+        class="bg-white dark:bg-dark-900 w-full max-w-sm rounded-3xl p-6 text-center animate-bounce-in"
+        @click.outside="modals.rateOrder = false"
+      >
+        <h3 class="text-2xl font-black mb-2 dark:text-white">Как вам еда?</h3>
+        <p class="text-gray-500 text-sm mb-6">
+          Оцените вкус и качество обслуживания
+        </p>
+
+        <div class="flex justify-center gap-2 mb-8">
+          <template x-for="i in 5">
+            <button
+              @click="ratingVal = i"
+              class="text-4xl transition hover:scale-110 active:scale-90"
+              :class="i <= ratingVal ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-700'"
+            >
+              ★
+            </button>
+          </template>
         </div>
+
+        <button
+          @click="confirmOrder"
+          class="w-full py-3 bg-brand-600 text-white rounded-xl font-bold text-lg shadow-lg active:scale-95 transition"
+        >
+          Отправить оценку
+        </button>
+      </div>
     </div>
 
     <!-- TopUp Modal -->
-    <div x-show="modals.topUp" class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" x-cloak>
-        <div class="bg-white dark:bg-dark-900 w-full max-w-sm rounded-3xl p-6 animate-fade-in" @click.outside="modals.topUp = false">
-            <h3 class="text-xl font-bold mb-4 dark:text-white">Пополнение</h3>
-            <div class="grid grid-cols-3 gap-3 mb-4">
-                <button @click="topUpVal = 100" class="py-2 border-2 dark:border-dark-700 rounded-xl font-bold dark:text-white hover:border-brand-500 transition">100₽</button>
-                <button @click="topUpVal = 500" class="py-2 border-2 dark:border-dark-700 rounded-xl font-bold dark:text-white hover:border-brand-500 transition">500₽</button>
-                <button @click="topUpVal = 1000" class="py-2 border-2 dark:border-dark-700 rounded-xl font-bold dark:text-white hover:border-brand-500 transition">1000₽</button>
-            </div>
-            <input type="number" x-model="topUpVal" class="w-full p-3 bg-gray-100 dark:bg-dark-800 rounded-xl text-center font-bold mb-4 dark:text-white">
-            <button @click="performTopUp" class="w-full py-3 bg-brand-600 text-white rounded-xl font-bold">Оплатить</button>
+    <div
+      x-show="modals.topUp"
+      class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      x-cloak
+    >
+      <div
+        class="bg-white dark:bg-dark-900 w-full max-w-sm rounded-3xl p-6 animate-fade-in"
+        @click.outside="modals.topUp = false"
+      >
+        <h3 class="text-xl font-bold mb-4 dark:text-white">Пополнение</h3>
+        <div class="grid grid-cols-3 gap-3 mb-4">
+          <button
+            @click="topUpVal = 100"
+            class="py-2 border-2 dark:border-dark-700 rounded-xl font-bold dark:text-white hover:border-brand-500 transition"
+          >
+            100₽
+          </button>
+          <button
+            @click="topUpVal = 500"
+            class="py-2 border-2 dark:border-dark-700 rounded-xl font-bold dark:text-white hover:border-brand-500 transition"
+          >
+            500₽
+          </button>
+          <button
+            @click="topUpVal = 1000"
+            class="py-2 border-2 dark:border-dark-700 rounded-xl font-bold dark:text-white hover:border-brand-500 transition"
+          >
+            1000₽
+          </button>
         </div>
+        <input
+          type="number"
+          x-model="topUpVal"
+          class="w-full p-3 bg-gray-100 dark:bg-dark-800 rounded-xl text-center font-bold mb-4 dark:text-white"
+        />
+        <button
+          @click="performTopUp"
+          class="w-full py-3 bg-brand-600 text-white rounded-xl font-bold"
+        >
+          Оплатить
+        </button>
+      </div>
     </div>
 
     <!-- Supply Modal -->
-    <div x-show="modals.supply" class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" x-cloak>
-        <div class="bg-white dark:bg-dark-900 w-full max-w-sm rounded-2xl p-6" @click.outside="modals.supply=false">
-            <h3 class="font-bold text-lg mb-4 dark:text-white">Заказ продуктов</h3>
-            <input x-model="supplyForm.name" type="text" placeholder="Название продукта" class="w-full p-3 bg-gray-100 dark:bg-dark-800 rounded-lg mb-2 dark:text-white">
-            <input x-model="supplyForm.amount" type="number" placeholder="Количество (шт/кг)" class="w-full p-3 bg-gray-100 dark:bg-dark-800 rounded-lg mb-4 dark:text-white">
-            <button @click="sendSupplyRequest" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold">Отправить админу</button>
-        </div>
+    <div
+      x-show="modals.supply"
+      class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      x-cloak
+    >
+      <div
+        class="bg-white dark:bg-dark-900 w-full max-w-sm rounded-2xl p-6"
+        @click.outside="modals.supply=false"
+      >
+        <h3 class="font-bold text-lg mb-4 dark:text-white">Заказ продуктов</h3>
+        <input
+          x-model="supplyForm.name"
+          type="text"
+          placeholder="Название продукта"
+          class="w-full p-3 bg-gray-100 dark:bg-dark-800 rounded-lg mb-2 dark:text-white"
+        />
+        <input
+          x-model="supplyForm.amount"
+          type="number"
+          placeholder="Количество (шт/кг)"
+          class="w-full p-3 bg-gray-100 dark:bg-dark-800 rounded-lg mb-4 dark:text-white"
+        />
+        <button
+          @click="sendSupplyRequest"
+          class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold"
+        >
+          Отправить админу
+        </button>
+      </div>
     </div>
 
     <script>
-        const API_URL = 'http://localhost:3000/api';
+      const API_URL = "http://localhost:3000/api";
 
-        function app() {
-            return {
-                view: 'AUTH',
-                authMode: 'login',
-                isDark: false,
-                globalLoading: false,
-                studentTab: 'menu',
-                isSanitaryDay: false,
-                
-                // Data
-                user: null,
-                products: [],
-                myOrders: [],
-                allOrders: [],
-                adminData: { revenue: 0, orders: [], supplies: [], avgRating: "0.0" },
-                adminChart: null,
-                
-                // Forms
-                authForm: { login: '', password: '' },
-                regForm: { login: '', password: '', name: '' },
-                supplyForm: { name: '', amount: '' },
-                topUpVal: 500,
-                ratingVal: 5,
-                activeOrderId: null, // For rating modal
-                
-                // UI
-                activeCat: 'lunch',
-                cart: [],
-                modals: { topUp: false, supply: false, rateOrder: false },
-                notification: { show: false, text: '', icon: '' },
-                pollingInterval: null,
+      function app() {
+        return {
+          view: "AUTH",
+          authMode: "login",
+          isDark: false,
+          globalLoading: false,
+          studentTab: "menu",
+          isSanitaryDay: false,
 
-                categories: [ {id:'lunch', name:'Обеды'}, {id:'bakery', name:'Выпечка'}, {id:'drink', name:'Напитки'}, {id:'snack', name:'Снеки'} ],
-                roles: { 'STUDENT': 'Ученик', 'COOK': 'Повар', 'ADMIN': 'Администратор' },
-                statusText: { 'pending': 'Готовится', 'ready': 'Готов к выдаче', 'completed': 'Выдан' },
-                statusColors: { 'pending': 'bg-yellow-500', 'ready': 'bg-green-500', 'completed': 'bg-gray-400' },
+          // Data
+          user: null,
+          products: [],
+          myOrders: [],
+          allOrders: [],
+          adminData: { revenue: 0, orders: [], supplies: [], avgRating: "0.0" },
+          adminChart: null,
 
-                get filteredProducts() { 
-                    return this.products.filter(p => {
-                        const matchCat = this.activeCat ? p.category === this.activeCat : true;
-                        const inStock = this.user?.role === 'STUDENT' ? p.stock > 0 : true;
-                        return matchCat && inStock;
-                    }); 
-                },
-                get cartTotal() { return this.cart.reduce((a,b) => a + (b.price * b.quantity), 0); },
-                get activeOrders() { return this.allOrders.filter(o => o.status !== 'completed').reverse(); },
-                get hasActiveSub() { 
-                    if (!this.user?.subscription_end) return false;
-                    const parts = this.user.subscription_end.split('.');
-                    if(parts.length !== 3) return false;
-                    const subEnd = new Date(parts[2], parts[1]-1, parts[0]);
-                    const now = new Date(); now.setHours(0,0,0,0);
-                    return subEnd >= now;
-                },
+          // Forms
+          authForm: { login: "", password: "" },
+          regForm: { login: "", password: "", name: "" },
+          supplyForm: { name: "", amount: "" },
+          topUpVal: 500,
+          ratingVal: 5,
+          activeOrderId: null, // For rating modal
 
-                async initApp() {
-                    if (window.matchMedia('(prefers-color-scheme: dark)').matches) this.isDark = true;
-                    // Check initial status
-                    const res = await this.api('/init');
-                    if (res) {
-                        this.products = res.products;
-                        this.isSanitaryDay = res.isSanitaryDay;
-                    }
-                    this.startPolling();
-                },
-                
-                startPolling() {
-                    if (this.pollingInterval) clearInterval(this.pollingInterval);
-                    this.pollingInterval = setInterval(() => {
-                        if (this.user) this.loadRoleData();
-                        // Also check global settings like Sanitary Day occasionally
-                        if (this.user?.role === 'STUDENT' && Math.random() > 0.8) {
-                             this.api('/init').then(r => this.isSanitaryDay = r?.isSanitaryDay);
-                        }
-                    }, 3000);
-                },
+          // UI
+          activeCat: "lunch",
+          cart: [],
+          modals: { topUp: false, supply: false, rateOrder: false },
+          notification: { show: false, text: "", icon: "" },
+          pollingInterval: null,
 
-                async api(endpoint, method = 'GET', body = null) {
-                    try {
-                        const opts = { method, headers: { 'Content-Type': 'application/json' } };
-                        if (body) opts.body = JSON.stringify(body);
-                        const res = await fetch(API_URL + endpoint, opts);
-                        if (!res.ok) throw new Error(`API Error: ${res.status}`);
-                        return await res.json();
-                    } catch (e) {
-                        console.error(e);
-                        return null;
-                    }
-                },
+          categories: [
+            { id: "lunch", name: "Обеды" },
+            { id: "bakery", name: "Выпечка" },
+            { id: "drink", name: "Напитки" },
+            { id: "snack", name: "Снеки" },
+          ],
+          roles: { STUDENT: "Ученик", COOK: "Повар", ADMIN: "Администратор" },
+          statusText: {
+            pending: "Готовится",
+            ready: "Готов к выдаче",
+            completed: "Выдан",
+          },
+          statusColors: {
+            pending: "bg-yellow-500",
+            ready: "bg-green-500",
+            completed: "bg-gray-400",
+          },
 
-                // --- AUTH ---
-                async login() {
-                    this.globalLoading = true;
-                    const res = await this.api('/auth/login', 'POST', this.authForm);
-                    this.globalLoading = false;
+          get filteredProducts() {
+            return this.products.filter((p) => {
+              const matchCat = this.activeCat
+                ? p.category === this.activeCat
+                : true;
+              const inStock =
+                this.user?.role === "STUDENT" ? p.stock > 0 : true;
+              return matchCat && inStock;
+            });
+          },
+          get cartTotal() {
+            return this.cart.reduce((a, b) => a + b.price * b.quantity, 0);
+          },
+          get activeOrders() {
+            return this.allOrders
+              .filter((o) => o.status !== "completed")
+              .reverse();
+          },
+          get hasActiveSub() {
+            if (!this.user?.subscription_end) return false;
+            const parts = this.user.subscription_end.split(".");
+            if (parts.length !== 3) return false;
+            const subEnd = new Date(parts[2], parts[1] - 1, parts[0]);
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            return subEnd >= now;
+          },
 
-                    if (res && res.success) {
-                        this.user = res.user;
-                        this.view = 'APP';
-                        this.authForm = {login:'', password:''};
-                        this.loadRoleData();
-                    } else {
-                        alert(res?.error || 'Ошибка входа');
-                    }
-                },
-                async register() {
-                    if (!this.regForm.login || !this.regForm.password) return alert('Заполните поля');
-                    const res = await this.api('/auth/register', 'POST', this.regForm);
-                    if (res && res.success) {
-                        this.showNotify('Создано! Войдите.', '✅');
-                        this.authMode = 'login';
-                        this.regForm = {login:'', password:'', name:''};
-                    } else {
-                        alert(res?.error || 'Ошибка');
-                    }
-                },
-                logout() {
-                    this.user = null;
-                    this.view = 'AUTH';
-                    this.cart = [];
-                    this.myOrders = [];
-                    if (this.adminChart) { this.adminChart.destroy(); this.adminChart = null; }
-                },
-
-                // --- DATA ---
-                async loadRoleData() {
-                    if (!this.user) return;
-                    
-                    if (this.user.role === 'STUDENT') {
-                        const orders = await this.api(`/orders/user/${this.user.id}`);
-                        if (orders) this.myOrders = orders.reverse();
-                    } 
-                    else if (this.user.role === 'COOK') {
-                        const orders = await this.api('/cook/orders');
-                        if (orders) this.allOrders = orders;
-                    }
-                    else if (this.user.role === 'ADMIN') {
-                        const data = await this.api('/admin/dashboard');
-                        if (data) {
-                            this.adminData.revenue = data.revenue;
-                            this.adminData.supplies = data.supplies;
-                            this.adminData.avgRating = data.avgRating;
-                            this.isSanitaryDay = data.isSanitaryDay;
-                            
-                            // Update Chart
-                            this.updateAdminChart(data.chartData);
-                        }
-                    }
-                },
-
-                updateAdminChart(data) {
-                    const ctx = document.getElementById('revenueChart');
-                    if (!ctx) return;
-                    
-                    const values = [data.lunch, data.bakery, data.drink, data.snack];
-                    
-                    if (this.adminChart) {
-                        this.adminChart.data.datasets[0].data = values;
-                        this.adminChart.update();
-                    } else {
-                        this.adminChart = new Chart(ctx, {
-                            type: 'doughnut',
-                            data: {
-                                labels: ['Обеды', 'Выпечка', 'Напитки', 'Снеки'],
-                                datasets: [{
-                                    data: values,
-                                    backgroundColor: ['#FF6B00', '#F59E0B', '#3B82F6', '#10B981'],
-                                    borderWidth: 0
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: { legend: { display: false } }
-                            }
-                        });
-                    }
-                },
-
-                // --- ACTIONS ---
-                addToCart(p) {
-                    const ex = this.cart.find(x => x.id === p.id);
-                    if (ex) ex.quantity++; else this.cart.push({...p, quantity:1});
-                    this.showNotify('Добавлено', '🛒');
-                },
-
-                async placeOrder() {
-                    this.globalLoading = true;
-                    const res = await this.api('/orders', 'POST', {
-                        userId: this.user.id,
-                        items: this.cart,
-                        total: this.cartTotal,
-                        payWithSub: this.hasActiveSub
-                    });
-                    this.globalLoading = false;
-
-                    if (res && res.success) {
-                        this.user = res.user;
-                        this.cart = [];
-                        this.studentTab = 'orders';
-                        this.showNotify('Заказ отправлен!', '🚀');
-                        this.loadRoleData();
-                    } else {
-                        alert(res?.error || 'Ошибка заказа');
-                    }
-                },
-                
-                openRatingModal(id) {
-                    this.activeOrderId = id;
-                    this.ratingVal = 5;
-                    this.modals.rateOrder = true;
-                },
-
-                async confirmOrder() {
-                    const res = await this.api('/orders/confirm', 'POST', {
-                        orderId: this.activeOrderId,
-                        rating: this.ratingVal
-                    });
-                    if (res && res.success) {
-                        this.modals.rateOrder = false;
-                        this.showNotify('Спасибо за оценку!', '⭐️');
-                        this.loadRoleData();
-                    }
-                },
-
-                async performTopUp() {
-                    await this.api('/user/topup', 'POST', { userId: this.user.id, amount: parseInt(this.topUpVal) });
-                    this.user.balance += parseInt(this.topUpVal);
-                    this.modals.topUp = false;
-                    this.showNotify('Баланс пополнен', '💳');
-                },
-                
-                async buySubscription() {
-                    if (this.user.balance < 3000) return alert('Нужно 3000₽');
-                    if (!confirm('Купить за 3000₽?')) return;
-                    const res = await this.api('/user/subscribe', 'POST', { userId: this.user.id });
-                    if (res && res.success) {
-                        this.user.balance -= 3000;
-                        this.user.subscription_end = res.subDate;
-                        this.showNotify('Подписка активна!', '🔥');
-                    }
-                },
-
-                async updateOrderStatus(id, status) {
-                    await this.api('/cook/status', 'POST', { orderId: id, status });
-                    const o = this.allOrders.find(x => x.id === id);
-                    if (o) o.status = status;
-                },
-
-                async sendSupplyRequest() {
-                    if (!this.supplyForm.name) return;
-                    await this.api('/supplies/request', 'POST', { 
-                        productName: this.supplyForm.name, 
-                        amount: this.supplyForm.amount 
-                    });
-                    this.modals.supply = false;
-                    this.supplyForm = {name:'', amount:''};
-                    this.showNotify('Заявка отправлена', '🚚');
-                },
-
-                async approveSupply(id) {
-                    await this.api('/admin/supplies/approve', 'POST', { id });
-                    this.showNotify('Склад пополнен', '✅');
-                    this.loadRoleData();
-                },
-                
-                async toggleSanitary() {
-                    this.isSanitaryDay = !this.isSanitaryDay;
-                    await this.api('/admin/sanitary', 'POST', { state: this.isSanitaryDay });
-                    this.showNotify(this.isSanitaryDay ? 'Столовая закрыта' : 'Столовая открыта', '🔐');
-                },
-
-                // --- UTIL ---
-                toggleTheme() { this.isDark = !this.isDark; },
-                formatPrice(p) { return (p||0).toLocaleString('ru-RU') + ' ₽'; },
-                formatTime(d) { return new Date(d).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}); },
-                showNotify(text, icon) {
-                    this.notification = {show: true, text, icon};
-                    setTimeout(() => this.notification.show = false, 3000);
-                }
+          async initApp() {
+            if (window.matchMedia("(prefers-color-scheme: dark)").matches)
+              this.isDark = true;
+            // Check initial status
+            const res = await this.api("/init");
+            if (res) {
+              this.products = res.products;
+              this.isSanitaryDay = res.isSanitaryDay;
             }
-        }
+            this.startPolling();
+          },
+
+          startPolling() {
+            if (this.pollingInterval) clearInterval(this.pollingInterval);
+            this.pollingInterval = setInterval(() => {
+              if (this.user) this.loadRoleData();
+              // Also check global settings like Sanitary Day occasionally
+              if (this.user?.role === "STUDENT" && Math.random() > 0.8) {
+                this.api("/init").then(
+                  (r) => (this.isSanitaryDay = r?.isSanitaryDay),
+                );
+              }
+            }, 3000);
+          },
+
+          async api(endpoint, method = "GET", body = null) {
+            try {
+              const opts = {
+                method,
+                headers: { "Content-Type": "application/json" },
+              };
+              if (body) opts.body = JSON.stringify(body);
+              const res = await fetch(API_URL + endpoint, opts);
+              if (!res.ok) throw new Error(`API Error: ${res.status}`);
+              return await res.json();
+            } catch (e) {
+              console.error(e);
+              return null;
+            }
+          },
+
+          // --- AUTH ---
+          async login() {
+            this.globalLoading = true;
+            const res = await this.api("/auth/login", "POST", this.authForm);
+            this.globalLoading = false;
+
+            if (res && res.success) {
+              this.user = res.user;
+              this.view = "APP";
+              this.authForm = { login: "", password: "" };
+              this.loadRoleData();
+            } else {
+              alert(res?.error || "Ошибка входа");
+            }
+          },
+          async register() {
+            if (!this.regForm.login || !this.regForm.password)
+              return alert("Заполните поля");
+            const res = await this.api("/auth/register", "POST", this.regForm);
+            if (res && res.success) {
+              this.showNotify("Создано! Войдите.", "✅");
+              this.authMode = "login";
+              this.regForm = { login: "", password: "", name: "" };
+            } else {
+              alert(res?.error || "Ошибка");
+            }
+          },
+          logout() {
+            this.user = null;
+            this.view = "AUTH";
+            this.cart = [];
+            this.myOrders = [];
+            if (this.adminChart) {
+              this.adminChart.destroy();
+              this.adminChart = null;
+            }
+          },
+
+          // --- DATA ---
+          async loadRoleData() {
+            if (!this.user) return;
+
+            if (this.user.role === "STUDENT") {
+              const orders = await this.api(`/orders/user/${this.user.id}`);
+              if (orders) this.myOrders = orders.reverse();
+            } else if (this.user.role === "COOK") {
+              const orders = await this.api("/cook/orders");
+              if (orders) this.allOrders = orders;
+            } else if (this.user.role === "ADMIN") {
+              const data = await this.api("/admin/dashboard");
+              if (data) {
+                this.adminData.revenue = data.revenue;
+                this.adminData.supplies = data.supplies;
+                this.adminData.avgRating = data.avgRating;
+                this.isSanitaryDay = data.isSanitaryDay;
+
+                // Update Chart
+                this.updateAdminChart(data.chartData);
+              }
+            }
+          },
+
+          updateAdminChart(data) {
+            const ctx = document.getElementById("revenueChart");
+            if (!ctx) return;
+
+            const values = [data.lunch, data.bakery, data.drink, data.snack];
+
+            if (this.adminChart) {
+              this.adminChart.data.datasets[0].data = values;
+              this.adminChart.update();
+            } else {
+              this.adminChart = new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                  labels: ["Обеды", "Выпечка", "Напитки", "Снеки"],
+                  datasets: [
+                    {
+                      data: values,
+                      backgroundColor: [
+                        "#FF6B00",
+                        "#F59E0B",
+                        "#3B82F6",
+                        "#10B981",
+                      ],
+                      borderWidth: 0,
+                    },
+                  ],
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: { legend: { display: false } },
+                },
+              });
+            }
+          },
+
+          // --- ACTIONS ---
+          addToCart(p) {
+            const ex = this.cart.find((x) => x.id === p.id);
+            if (ex) ex.quantity++;
+            else this.cart.push({ ...p, quantity: 1 });
+            this.showNotify("Добавлено", "🛒");
+          },
+
+          async placeOrder() {
+            this.globalLoading = true;
+            const res = await this.api("/orders", "POST", {
+              userId: this.user.id,
+              items: this.cart,
+              total: this.cartTotal,
+              payWithSub: this.hasActiveSub,
+            });
+            this.globalLoading = false;
+
+            if (res && res.success) {
+              this.user = res.user;
+              this.cart = [];
+              this.studentTab = "orders";
+              this.showNotify("Заказ отправлен!", "🚀");
+              this.loadRoleData();
+            } else {
+              alert(res?.error || "Ошибка заказа");
+            }
+          },
+
+          openRatingModal(id) {
+            this.activeOrderId = id;
+            this.ratingVal = 5;
+            this.modals.rateOrder = true;
+          },
+
+          async confirmOrder() {
+            const res = await this.api("/orders/confirm", "POST", {
+              orderId: this.activeOrderId,
+              rating: this.ratingVal,
+            });
+            if (res && res.success) {
+              this.modals.rateOrder = false;
+              this.showNotify("Спасибо за оценку!", "⭐️");
+              this.loadRoleData();
+            }
+          },
+
+          async performTopUp() {
+            await this.api("/user/topup", "POST", {
+              userId: this.user.id,
+              amount: parseInt(this.topUpVal),
+            });
+            this.user.balance += parseInt(this.topUpVal);
+            this.modals.topUp = false;
+            this.showNotify("Баланс пополнен", "💳");
+          },
+
+          async buySubscription() {
+            if (this.user.balance < 3000) return alert("Нужно 3000₽");
+            if (!confirm("Купить за 3000₽?")) return;
+            const res = await this.api("/user/subscribe", "POST", {
+              userId: this.user.id,
+            });
+            if (res && res.success) {
+              this.user.balance -= 3000;
+              this.user.subscription_end = res.subDate;
+              this.showNotify("Подписка активна!", "🔥");
+            }
+          },
+
+          async updateOrderStatus(id, status) {
+            await this.api("/cook/status", "POST", { orderId: id, status });
+            const o = this.allOrders.find((x) => x.id === id);
+            if (o) o.status = status;
+          },
+
+          async sendSupplyRequest() {
+            if (!this.supplyForm.name) return;
+            await this.api("/supplies/request", "POST", {
+              productName: this.supplyForm.name,
+              amount: this.supplyForm.amount,
+            });
+            this.modals.supply = false;
+            this.supplyForm = { name: "", amount: "" };
+            this.showNotify("Заявка отправлена", "🚚");
+          },
+
+          async approveSupply(id) {
+            await this.api("/admin/supplies/approve", "POST", { id });
+            this.showNotify("Склад пополнен", "✅");
+            this.loadRoleData();
+          },
+
+          async toggleSanitary() {
+            this.isSanitaryDay = !this.isSanitaryDay;
+            await this.api("/admin/sanitary", "POST", {
+              state: this.isSanitaryDay,
+            });
+            this.showNotify(
+              this.isSanitaryDay ? "Столовая закрыта" : "Столовая открыта",
+              "🔐",
+            );
+          },
+
+          // --- UTIL ---
+          toggleTheme() {
+            this.isDark = !this.isDark;
+          },
+          formatPrice(p) {
+            return (p || 0).toLocaleString("ru-RU") + " ₽";
+          },
+          formatTime(d) {
+            return new Date(d).toLocaleTimeString("ru-RU", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+          },
+          showNotify(text, icon) {
+            this.notification = { show: true, text, icon };
+            setTimeout(() => (this.notification.show = false), 3000);
+          },
+        };
+      }
     </script>
-</body>
+  </body>
 </html>

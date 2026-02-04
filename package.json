@@ -21,6 +21,7 @@
     "@types/md5": "^2.3.6",
     "@types/node": "^20.19.30",
     "@types/sqlite3": "^3.1.11",
+    "prettier": "3.8.1",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
