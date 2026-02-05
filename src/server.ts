@@ -68,14 +68,7 @@ const validateText = (_text: string): boolean => {
 
 // --- MIDDLEWARE ---
 app.use(express.json());
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-  );
-  next();
-});
+app.use(cors({ allowedHeaders: "Content-Type" }));
 app.use(express.static(path.join(__dirname, "../public")));
 app.set("views", path.join(__dirname, "../views"));
 app.set("view engine", "ejs");
@@ -245,7 +238,9 @@ io.on("connection", (socket) => {
 });
 
 // --- ROUTES ---
-app.get("/", (req, res) => res.render("index", { apiUrl: `${BASE_URL}/api` }));
+app.get("/", (req, res) =>
+  res.render("index", { apiUrl: `${BASE_URL}:${PORT}/api` }),
+);
 
 app.get("/api/init", async (req, res) => {
   const products = await query<Product>("SELECT * FROM products");
