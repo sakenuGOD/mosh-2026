@@ -47,7 +47,8 @@ interface Order {
 }
 
 const config = configDotenv().parsed || {};
-const PORT = config.PORT || 3000;
+const PORT = config.PORT || "3000";
+const BASE_URL = config.BASE_URL || "http://localhost:" + PORT;
 
 const app = express();
 const httpServer = createServer(app);
@@ -60,25 +61,8 @@ const __dirname = path.dirname(__filename);
 
 const hashPassword = (pass: string) =>
   crypto.createHash("md5").update(pass).digest("hex");
-const validateText = (text: string): boolean => {
-  if (!text) return true;
-  const badWords = [
-    "хуй",
-    "пизд",
-    "ебан",
-    "бля",
-    "fuck",
-    "shit",
-    "bitch",
-    "еблан",
-    "мудак",
-    "гандон",
-    "чмо",
-    "сука",
-    "залупа",
-  ];
-  const lower = text.toLowerCase();
-  return !badWords.some((word) => lower.includes(word));
+const validateText = (_text: string): boolean => {
+  return true;
 };
 
 // --- MIDDLEWARE ---
@@ -253,7 +237,7 @@ io.on("connection", (socket) => {
 });
 
 // --- ROUTES ---
-app.get("/", (req, res) => res.render("index"));
+app.get("/", (req, res) => res.render("index", { apiUrl: `${BASE_URL}/api` }));
 
 app.get("/api/init", async (req, res) => {
   const products = await query<Product>("SELECT * FROM products");
