@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { createServer } from "http";
+import { createServer } from "https";
 import { Server } from "socket.io";
 import sqlite3 from "sqlite3";
 import path from "path";
@@ -7,6 +7,7 @@ import cors from "cors";
 import crypto from "crypto";
 import { fileURLToPath } from "url";
 import { configDotenv } from "dotenv";
+import { readFileSync } from "fs";
 
 // --- ТИПЫ ДАННЫХ ---
 interface User {
@@ -49,10 +50,14 @@ interface Order {
 const config = configDotenv().parsed || {};
 const PORT = config.PORT || "3000";
 const BASE_URL = config.BASE_URL || "http://localhost:" + PORT;
-console.log(`app's base url is ${BASE_URL}`);
+const CERT_PATH = config.CERT_PATH;
+const KEY_PATH = config.KEY_PATH;
+
+const sslKey = readFileSync(KEY_PATH);
+const sslCert = readFileSync(CERT_PATH);
 
 const app = express();
-const httpServer = createServer(app);
+const httpServer = createServer({ key: sslKey, cert: sslCert }, app);
 const io = new Server(httpServer, { cors: { origin: "*" } });
 
 const db = new sqlite3.Database("canteen_v6.db");
