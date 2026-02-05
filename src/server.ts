@@ -49,6 +49,7 @@ interface Order {
 const config = configDotenv().parsed || {};
 const PORT = config.PORT || "3000";
 const BASE_URL = config.BASE_URL || "http://localhost:" + PORT;
+console.log(`app's base url is ${BASE_URL}`);
 
 const app = express();
 const httpServer = createServer(app);
