@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ru" class="antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Столовая - Меню и Отзывы</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: { 
+                        brand: { 500: '#FF6B00', 600: '#E65100' }, 
+                        dark: { 800: '#1e293b', 900: '#0f172a', 950: '#020617' } 
+                    },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'bounce-in': 'bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)', 'slide-down': 'slideDown 0.4s ease-out' },
+                    keyframes: { 
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        bounceIn: { '0%': { transform: 'scale(0.3)', opacity: '0' }, '50%': { transform: 'scale(1.05)' }, '70%': { transform: 'scale(0.9)' }, '100%': { transform: 'scale(1)', opacity: '1' } },
+                        slideDown: { '0%': { transform: 'translateY(-100%)' }, '100%': { transform: 'translateY(0)' } }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        [x-cloak] { display: none !important; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .custom-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark .custom-scroll::-webkit-scrollbar-thumb { background: #475569; }
+        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .dark .glass { background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        .loader-dark { border-color: rgba(0,0,0,0.1); border-top-color: #000; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+
+<body x-data="app()" x-init="initApp()" :class="{ 'dark': isDark }" class="bg-gray-100 text-gray-900 dark:bg-dark-950 dark:text-gray-50 transition-colors duration-300 h-[100dvh] flex flex-col overflow-hidden">
+
+    <div x-show="globalLoading" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white dark:bg-dark-800 p-6 rounded-2xl shadow-2xl flex flex-col items-center">
+            <div class="loader loader-dark dark:border-white/20 dark:border-t-brand-500 w-10 h-10 mb-3"></div>
+            <div class="text-sm font-bold">Загрузка...</div>
+        </div>
+    </div>
+    
+    <div x-show="isSanitaryDay && user?.role === 'STUDENT'" class="fixed inset-0 z-[60] bg-gray-900/95 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center text-white animate-fade-in" x-cloak>
+        <div class="text-8xl mb-6 animate-bounce">🧼</div>
+        <h1 class="text-3xl font-black mb-4">Санитарный День</h1>
+        <p class="text-lg opacity-80 max-w-xs mx-auto">Столовая сегодня закрыта на генеральную уборку. Приходите завтра!</p>
+        <button @click="logout" class="mt-12 px-8 py-3 bg-white/10 rounded-xl font-bold hover:bg-white/20 transition border border-white/20">Выйти из аккаунта</button>
+    </div>
+
+    <div class="fixed top-24 left-0 right-0 z-[90] flex justify-center pointer-events-none">
+        <div x-show="notification.show" x-transition.move.top 
+             class="bg-dark-900 text-white dark:bg-white dark:text-black px-6 py-3 rounded-full shadow-xl text-sm font-bold flex items-center gap-3 border border-white/10"
+             :class="notification.type === 'warning' ? 'bg-red-500 border-red-400' : ''">
+             <span class="text-xl" x-text="notification.icon"></span>
+            <span x-text="notification.text"></span>
+        </div>
+    </div>
+
+    <div x-show="view === 'AUTH'" x-transition class="flex-1 flex flex-col items-center justify-center p-6 relative bg-white dark:bg-dark-950 overflow-y-auto">
+        <div class="w-full max-w-sm z-10 py-10">
+            <div class="text-center mb-10">
+                <div class="w-24 h-24 bg-brand-500 rounded-[2rem] mx-auto flex items-center justify-center text-5xl shadow-2xl shadow-brand-500/30 mb-6 animate-bounce-in">🍱</div>
+                <h1 class="text-3xl font-black mb-2 dark:text-white">Столовая</h1>
+                <p class="text-gray-400 font-medium">Вкусные завтраки и обеды</p>
+            </div>
+
+            <div class="bg-gray-100 dark:bg-dark-900 p-1 rounded-2xl mb-6 flex">
+                <button @click="authMode = 'login'" :class="authMode === 'login' ? 'bg-white dark:bg-dark-800 shadow-md' : 'text-gray-500'" class="flex-1 py-3 rounded-xl font-bold text-sm transition-all">Вход</button>
+                <button @click="authMode = 'register'" :class="authMode === 'register' ? 'bg-white dark:bg-dark-800 shadow-md' : 'text-gray-500'" class="flex-1 py-3 rounded-xl font-bold text-sm transition-all">Регистрация</button>
+            </div>
+
+            <div x-show="authMode === 'login'" class="space-y-4 animate-fade-in">
+                <input x-model="authForm.login" type="text" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white font-medium" placeholder="Логин">
+                <input x-model="authForm.password" type="password" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white font-medium" placeholder="Пароль">
+                <button @click="login" class="w-full py-4 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition-all mt-4">Войти</button>
+            </div>
+            
+            <div x-show="authMode === 'register'" class="space-y-4 animate-fade-in" x-cloak>
+                <input x-model="regForm.name" type="text" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white" placeholder="Имя Фамилия">
+                <input x-model="regForm.login" type="text" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white" placeholder="Придумайте Логин">
+                <input x-model="regForm.password" type="password" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-brand-500 dark:text-white" placeholder="Пароль">
+                
+                <div class="relative">
+                    <label class="text-xs font-bold text-gray-500 ml-2">Аллергии (Влияет на меню)</label>
+                    <input x-model="regForm.allergies" type="text" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-red-500 dark:text-white" placeholder="Например: Мед, Орехи, Рыба">
+                </div>
+
+                <div class="relative">
+                    <label class="text-xs font-bold text-gray-500 ml-2">Предпочтения (Для повара)</label>
+                    <input x-model="regForm.preferences" type="text" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border border-gray-200 dark:border-dark-800 rounded-2xl outline-none focus:ring-2 ring-blue-500 dark:text-white" placeholder="Напр: Без лука, побольше соуса">
+                </div>
+
+                <button @click="register" class="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-2xl shadow-lg active:scale-[0.98] transition-all mt-4">Создать аккаунт</button>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="view === 'APP'" x-cloak class="flex-1 flex flex-col h-full relative overflow-hidden">
+        
+        <div x-show="announcement.show" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="-translate-y-full opacity-0"
+             x-transition:enter-end="translate-y-0 opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="translate-y-0 opacity-100"
+             x-transition:leave-end="-translate-y-full opacity-0"
+             class="fixed top-0 left-0 right-0 z-[100] shadow-2xl p-4 flex justify-between items-start pt-safe"
+             :class="announcement.type === 'warning' ? 'bg-red-600 text-white' : 'bg-blue-600 text-white'">
+            <div class="flex gap-3 max-w-lg mx-auto w-full pt-2 sm:pt-0">
+                <div class="text-3xl animate-bounce pt-1">
+                    <span x-show="announcement.type === 'warning'">🚨</span>
+                    <span x-show="announcement.type !== 'warning'">ℹ️</span>
+                </div>
+                <div>
+                    <div class="font-black uppercase tracking-wide text-xs opacity-70 mb-1" x-text="announcement.type === 'warning' ? 'СРОЧНОЕ СООБЩЕНИЕ' : 'ИНФОРМАЦИЯ'"></div>
+                    <div class="font-bold text-lg leading-tight" x-text="announcement.message"></div>
+                </div>
+            </div>
+            <button @click="announcement.show = false" class="text-white/60 hover:text-white p-2 pt-3 sm:pt-0">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <div class="glass flex-none z-30 px-4 py-3 flex justify-between items-center shadow-sm relative">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-red-500 flex items-center justify-center text-white font-bold text-lg shadow-md shrink-0" x-text="user?.name?.[0]"></div>
+                <div class="min-w-0">
+                    <div class="font-bold text-sm leading-tight dark:text-white truncate" x-text="user?.name"></div>
+                    <div class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 tracking-wider" x-text="roles[user?.role]"></div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 items-center">
+                <div x-show="user?.role === 'ADMIN'" class="flex flex-col items-end mr-2">
+                    <button @click="toggleSanitary" class="w-10 h-5 rounded-full relative transition-colors duration-300" :class="isSanitaryDay ? 'bg-red-500' : 'bg-gray-300 dark:bg-dark-700'">
+                        <div class="w-3 h-3 bg-white rounded-full absolute top-1 transition-all duration-300 shadow-sm" :class="isSanitaryDay ? 'left-6' : 'left-1'"></div>
+                    </button>
+                    <span class="text-[9px] font-bold text-gray-400">Сан. день</span>
+                </div>
+                <div class="flex gap-2 shrink-0">
+                    <button @click="toggleTheme" class="w-10 h-10 rounded-full bg-gray-200 dark:bg-dark-800 dark:text-white flex items-center justify-center transition">
+                        <span x-show="!isDark">🌙</span><span x-show="isDark">☀️</span>
+                    </button>
+                    <button @click="logout" class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center">🚪</button>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="user?.role === 'STUDENT'" class="flex-1 overflow-y-auto custom-scroll relative bg-gray-100 dark:bg-dark-950 pb-32 pt-4">
+            
+            <div x-show="studentTab === 'menu'" class="px-4 space-y-6 animate-fade-in">
+                
+                <div class="bg-dark-900 dark:bg-brand-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden transform transition hover:scale-[1.01]">
+                    <div class="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <div class="text-xs text-white/60 font-medium mb-1">Баланс</div>
+                                <div class="text-4xl font-black tracking-tight" x-text="formatPrice(user?.balance)"></div>
+                            </div>
+                            <button @click="modals.topUp = true" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1 backdrop-blur-sm">
+                                <span>+</span> Пополнить
+                            </button>
+                        </div>
+                        
+                        <div class="border-t border-white/10 pt-4">
+                            <template x-if="hasActiveSub">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl">🔥</div>
+                                    <div>
+                                        <div class="text-xs font-bold uppercase tracking-wide text-green-300">Абонемент активен</div>
+                                        <div class="text-[10px] opacity-70">Все бесплатно до: <span x-text="user.subscription_end"></span></div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="!hasActiveSub">
+                                <button @click="buySubscription" class="bg-gradient-to-r from-yellow-400 to-orange-500 text-black w-full py-3 rounded-xl text-xs font-black shadow-lg flex items-center justify-center gap-2">
+                                    <span>👑</span> Купить абонемент (5000₽ / мес)
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex bg-white dark:bg-dark-800 p-1 rounded-2xl shadow-sm border dark:border-dark-700">
+                    <button @click="menuTime = 'breakfast'" :class="menuTime === 'breakfast' ? 'bg-brand-500 text-white shadow-md' : 'text-gray-500'" class="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all">☀️ Завтрак</button>
+                    <button @click="menuTime = 'lunch'" :class="menuTime === 'lunch' ? 'bg-brand-500 text-white shadow-md' : 'text-gray-500'" class="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all">🍲 Обед</button>
+                    <button @click="menuTime = 'all'" :class="menuTime === 'all' ? 'bg-brand-500 text-white shadow-md' : 'text-gray-500'" class="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all">♾ Весь день</button>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <template x-for="p in filteredProducts" :key="p.id">
+                        <div class="bg-white dark:bg-dark-800 p-3 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-700 flex gap-4 transition-all active:scale-[0.98]">
+                            <div class="w-24 h-24 bg-gray-50 dark:bg-dark-900 rounded-xl flex items-center justify-center text-5xl shrink-0 cursor-pointer" @click="openProductReviews(p)">
+                                <span x-text="p.image"></span>
+                            </div>
+                            <div class="flex-1 flex flex-col py-1">
+                                <div class="flex justify-between items-start">
+                                    <h3 class="font-bold text-base leading-tight dark:text-gray-100" x-text="p.name"></h3>
+                                    <div class="text-brand-600 dark:text-brand-500 font-black text-lg">
+                                        <span x-show="!hasActiveSub" x-text="p.price + '₽'"></span>
+                                        <span x-show="hasActiveSub" class="text-green-500">0₽</span>
+                                    </div>
+                                </div>
+                                <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1 leading-snug">
+                                    <span class="font-bold">Состав:</span> <span x-text="p.desc"></span>
+                                </div>
+                                <div x-show="hasAllergy(p)" class="mt-2 flex items-center gap-1 text-[10px] font-bold text-red-600 bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded w-fit animate-pulse">
+                                    <span>⚠️ СОДЕРЖИТ АЛЛЕРГЕН</span>
+                                </div>
+                                <div class="mt-auto flex justify-between items-end">
+                                    <button @click="openProductReviews(p)" class="text-xs text-yellow-500 font-bold flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-2 py-1 rounded">
+                                        <span>★</span> <span x-text="p.avgRating ? p.avgRating : 'Нет оценок'"></span>
+                                    </button>
+                                    <button @click="addToCart(p)" class="w-8 h-8 rounded-full bg-black dark:bg-white text-white dark:text-black font-bold flex items-center justify-center shadow-md hover:scale-110 transition">+</button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div x-show="studentTab === 'orders'" class="px-4 space-y-4 animate-fade-in">
+                <h2 class="font-bold text-2xl mb-4 dark:text-white">Мои заказы</h2>
+                <template x-for="order in myOrders" :key="order.id">
+                    <div class="bg-white dark:bg-dark-800 rounded-2xl shadow border border-gray-100 dark:border-dark-700 p-5 relative">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="font-black text-xl dark:text-white">#<span x-text="order.id"></span></span>
+                            <span class="px-3 py-1 rounded-lg text-xs font-bold text-white capitalize shadow-sm"
+                                    :class="statusColors[order.status]" x-text="statusText[order.status]"></span>
+                        </div>
+                        <div class="space-y-1 mb-4 border-l-2 border-gray-100 dark:border-dark-700 pl-3">
+                            <template x-for="item in order.items">
+                                <div class="flex justify-between text-sm dark:text-gray-300">
+                                    <span x-text="item.name"></span>
+                                    <span class="font-bold opacity-70">x<span x-text="item.quantity"></span></span>
+                                </div>
+                            </template>
+                        </div>
+                        <div x-show="order.status === 'ready'" class="mt-4 pt-4 border-t dark:border-dark-700 animate-pulse">
+                            <button @click="confirmReceipt(order.id)" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-bold shadow-lg transition-all">
+                                👋 Я забрал заказ!
+                            </button>
+                        </div>
+                        <div class="text-[10px] text-gray-300 dark:text-gray-600 text-right mt-2" x-text="formatTime(order.date)"></div>
+                    </div>
+                </template>
+            </div>
+
+            <div x-show="cart.length > 0 && studentTab === 'menu'" class="fixed bottom-20 left-4 right-4 z-[40]">
+                <div class="bg-dark-900 dark:bg-white text-white dark:text-black p-4 rounded-3xl shadow-2xl flex flex-col gap-3">
+                    <div class="flex justify-between items-center px-2">
+                        <span class="text-sm font-medium opacity-80">Итого:</span>
+                        <div class="flex items-end gap-2">
+                            <span class="text-xl font-black" :class="{'line-through opacity-50 text-sm': hasActiveSub}" x-text="cartTotal + ' ₽'"></span>
+                            <span x-show="hasActiveSub" class="text-xl font-black text-brand-500">0 ₽</span>
+                        </div>
+                    </div>
+                    <button @click="placeOrder" class="w-full py-3.5 rounded-2xl font-bold text-sm shadow-lg flex justify-center items-center"
+                        :class="hasActiveSub ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white' : 'bg-brand-500 text-white'">
+                        <span x-text="hasActiveSub ? 'Оплатить Абонементом' : 'Оплатить Заказ'"></span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="fixed bottom-0 w-full bg-white dark:bg-dark-900 border-t dark:border-dark-800 pb-safe pt-2 px-6 flex justify-around items-center z-50 h-[70px]">
+                <button @click="studentTab='menu'" :class="studentTab=='menu' ? 'text-brand-500' : 'text-gray-400'" class="flex flex-col items-center gap-1 w-16">
+                    <span class="text-2xl">🍔</span><span class="text-[10px] font-bold">Меню</span>
+                </button>
+                <button @click="studentTab='orders'" :class="studentTab=='orders' ? 'text-brand-500' : 'text-gray-400'" class="flex flex-col items-center gap-1 w-16 relative">
+                    <span class="text-2xl">🧾</span><span class="text-[10px] font-bold">Заказы</span>
+                    <div x-show="myOrders.some(o=>o.status==='ready')" class="absolute top-0 right-2 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-dark-900"></div>
+                </button>
+            </div>
+        </div>
+
+        <div x-show="user?.role === 'COOK'" class="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-dark-950 pb-[80px]">
+            
+            <div x-show="cookTab === 'orders'" class="flex-1 flex flex-col overflow-hidden">
+                <div class="p-4 border-b dark:border-dark-800 bg-white dark:bg-dark-900 flex justify-between items-center shrink-0">
+                    <h2 class="font-bold text-xl dark:text-white">Активные заказы</h2>
+                    <div class="text-xs font-bold bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-full" x-text="'Очередь: ' + activeOrders.length"></div>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scroll">
+                    <template x-for="order in activeOrders" :key="order.id">
+                        <div class="bg-white dark:bg-[#1E293B] rounded-xl shadow-md p-5 border-l-4" 
+                             :class="order.status === 'pending' ? 'border-l-brand-500' : 'border-l-green-500'">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <div class="text-2xl font-black dark:text-white">#<span x-text="order.id"></span></div>
+                                    <div class="text-sm text-gray-500 dark:text-gray-300 font-bold" x-text="order.user_name"></div>
+                                </div>
+                                <div class="text-right flex flex-col items-end gap-1">
+                                    <div class="text-xs bg-gray-100 dark:bg-dark-900 px-2 py-1 rounded dark:text-gray-300 font-mono" x-text="formatTime(order.date)"></div>
+                                    <div x-show="order.user_allergies" class="text-[10px] font-bold text-white bg-red-500 px-2 py-1 rounded max-w-[150px] truncate" :title="order.user_allergies">
+                                        ⚠️ <span x-text="order.user_allergies"></span>
+                                    </div>
+                                    <div x-show="order.user_preferences" class="text-[10px] font-bold text-white bg-blue-500 px-2 py-1 rounded max-w-[150px] truncate" :title="order.user_preferences">
+                                        ℹ️ <span x-text="order.user_preferences"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-2 mb-4 bg-gray-50 dark:bg-dark-900 p-3 rounded-lg border border-gray-100 dark:border-dark-700">
+                                <template x-for="item in order.items">
+                                    <div class="flex justify-between items-center text-sm dark:text-gray-200">
+                                        <span class="font-medium" x-text="item.name"></span>
+                                        <span class="font-bold bg-white dark:bg-dark-800 px-2 py-0.5 rounded border dark:border-dark-700">x<span x-text="item.quantity"></span></span>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="flex gap-3">
+                                <button x-show="order.status === 'pending'" @click="updateOrderStatus(order.id, 'ready')" 
+                                        class="flex-1 bg-brand-600 text-white py-3 rounded-lg font-bold shadow-md active:scale-95 transition">✅ Готов</button>
+                                <div x-show="order.status === 'ready'" class="flex-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 py-3 rounded-lg font-bold text-center border border-green-200 dark:border-green-800 animate-pulse">
+                                    ⏳ Ждем ученика...
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    <div x-show="activeOrders.length === 0" class="text-center text-gray-400 py-10">Нет активных заказов</div>
+                </div>
+            </div>
+
+            <div x-show="cookTab === 'stock'" class="flex-1 flex flex-col overflow-hidden animate-fade-in">
+                <div class="p-4 border-b dark:border-dark-800 bg-white dark:bg-dark-900">
+                    <h2 class="font-bold text-xl dark:text-white">Контроль остатков</h2>
+                    <p class="text-xs text-gray-500">Редактируйте количество порций по факту</p>
+                </div>
+                <div class="flex-1 overflow-y-auto custom-scroll p-4 space-y-3">
+                    <template x-for="p in products" :key="p.id">
+                        <div class="bg-white dark:bg-dark-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-dark-700 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="text-2xl" x-text="p.image"></div>
+                                <div>
+                                    <div class="font-bold text-sm dark:text-white" x-text="p.name"></div>
+                                    <div class="text-[10px] text-gray-400" x-text="p.stock + ' порций'"></div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 bg-gray-100 dark:bg-dark-900 rounded-lg p-1">
+                                <button @click="updateStock(p.id, p.stock - 1)" class="w-8 h-8 flex items-center justify-center font-bold text-red-500 hover:bg-white dark:hover:bg-dark-800 rounded transition">-</button>
+                                <span class="w-8 text-center font-bold dark:text-white text-sm" x-text="p.stock"></span>
+                                <button @click="updateStock(p.id, p.stock + 1)" class="w-8 h-8 flex items-center justify-center font-bold text-green-500 hover:bg-white dark:hover:bg-dark-800 rounded transition">+</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div x-show="cookTab === 'stats'" class="flex-1 flex flex-col overflow-hidden animate-fade-in">
+                <div class="p-4 border-b dark:border-dark-800 bg-white dark:bg-dark-900">
+                    <h2 class="font-bold text-xl dark:text-white">Учет и Закупки</h2>
+                </div>
+                <div class="flex-1 overflow-y-auto custom-scroll p-4 pb-20">
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div class="bg-blue-500 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden">
+                            <div class="absolute -right-4 -top-4 text-6xl opacity-20">☀️</div>
+                            <div class="text-xs font-bold opacity-80 mb-1">Выдано Завтраков</div>
+                            <div class="text-3xl font-black" x-text="cookData.stats?.breakfast || 0"></div>
+                        </div>
+                        <div class="bg-orange-500 text-white p-4 rounded-2xl shadow-lg relative overflow-hidden">
+                            <div class="absolute -right-4 -top-4 text-6xl opacity-20">🍲</div>
+                            <div class="text-xs font-bold opacity-80 mb-1">Выдано Обедов</div>
+                            <div class="text-3xl font-black" x-text="cookData.stats?.lunch || 0"></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 flex justify-between items-center">
+                        <h3 class="font-bold text-lg dark:text-white">История заявок</h3>
+                        <button @click="modals.supply = true" class="text-xs bg-brand-500 text-white px-3 py-1.5 rounded-lg font-bold shadow hover:bg-brand-600 transition">+ Новая заявка</button>
+                    </div>
+
+                    <div class="space-y-3">
+                        <template x-for="sup in cookData.supplies" :key="sup.id">
+                            <div class="bg-white dark:bg-dark-800 p-3 rounded-xl border border-gray-100 dark:border-dark-700 flex justify-between items-center">
+                                <div>
+                                    <div class="font-bold text-sm dark:text-white" x-text="sup.product_name"></div>
+                                    <div class="text-xs text-gray-500" x-text="sup.amount + ' шт.'"></div>
+                                    <div class="text-[10px] text-brand-500" x-text="'Бюджет: ~' + sup.estimated_cost + '₽'"></div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-[10px] uppercase font-bold tracking-wide" 
+                                         :class="{
+                                             'text-yellow-500': sup.status === 'pending',
+                                             'text-green-500': sup.status === 'approved',
+                                             'text-red-500': sup.status === 'rejected'
+                                         }" 
+                                         x-text="sup.status === 'pending' ? 'Ожидание' : (sup.status === 'approved' ? 'Одобрено' : 'Отклонено')"></div>
+                                    <div class="text-[10px] text-gray-300" x-text="formatTime(sup.date)"></div>
+                                </div>
+                            </div>
+                        </template>
+                        <div x-show="!cookData.supplies?.length" class="text-center text-gray-400 text-xs py-4">История пуста</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fixed bottom-0 w-full bg-white dark:bg-dark-900 border-t dark:border-dark-800 pb-safe pt-2 px-6 flex justify-around items-center z-50 h-[70px]">
+                <button @click="cookTab='orders'" :class="cookTab=='orders' ? 'text-brand-500' : 'text-gray-400'" class="flex flex-col items-center gap-1 w-16">
+                    <span class="text-2xl">👨‍🍳</span><span class="text-[10px] font-bold">Заказы</span>
+                </button>
+                <button @click="cookTab='stock'" :class="cookTab=='stock' ? 'text-brand-500' : 'text-gray-400'" class="flex flex-col items-center gap-1 w-16">
+                    <span class="text-2xl">📦</span><span class="text-[10px] font-bold">Склад</span>
+                </button>
+                <button @click="cookTab='stats'; loadCookData()" :class="cookTab=='stats' ? 'text-brand-500' : 'text-gray-400'" class="flex flex-col items-center gap-1 w-16">
+                    <span class="text-2xl">📊</span><span class="text-[10px] font-bold">Отчеты</span>
+                </button>
+            </div>
+        </div>
+
+        <div x-show="user?.role === 'ADMIN'" class="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-dark-950 pb-[80px]">
+            
+            <div class="flex bg-white dark:bg-dark-900 p-1 rounded-none shadow-sm border-b dark:border-dark-800 overflow-x-auto hide-scroll">
+                <button @click="adminTab = 'dashboard'; loadAdminStats()" :class="adminTab === 'dashboard' ? 'bg-brand-500 text-white shadow-md' : 'text-gray-500'" class="flex-1 min-w-[100px] py-2.5 rounded-xl text-sm font-bold transition-all mx-1">📊 Дашборд</button>
+                <button @click="adminTab = 'supplies'; loadAdminSupplies()" :class="adminTab === 'supplies' ? 'bg-brand-500 text-white shadow-md' : 'text-gray-500'" class="flex-1 min-w-[100px] py-2.5 rounded-xl text-sm font-bold transition-all mx-1">🚚 Закупки</button>
+                <button @click="adminTab = 'reports'; loadAdminReport()" :class="adminTab === 'reports' ? 'bg-brand-500 text-white shadow-md' : 'text-gray-500'" class="flex-1 min-w-[100px] py-2.5 rounded-xl text-sm font-bold transition-all mx-1">📑 Отчеты</button>
+                <button @click="adminTab = 'notify'" :class="adminTab === 'notify' ? 'bg-brand-500 text-white shadow-md' : 'text-gray-500'" class="flex-1 min-w-[100px] py-2.5 rounded-xl text-sm font-bold transition-all mx-1">🔔 Рассылка</button>
+            </div>
+
+            <div x-show="adminTab === 'dashboard'" class="flex-1 overflow-y-auto custom-scroll p-6 space-y-6">
+                <div class="bg-white dark:bg-dark-800 p-5 rounded-2xl shadow-sm border dark:border-dark-700">
+                    <div class="text-gray-400 text-xs font-bold uppercase mb-1">Общая Выручка</div>
+                    <div class="text-4xl font-black text-green-500" x-text="adminData.revenue + ' ₽'"></div>
+                </div>
+                <div class="bg-white dark:bg-dark-800 p-5 rounded-2xl shadow-sm border dark:border-dark-700">
+                    <h3 class="font-bold text-lg mb-4 dark:text-white">Посещаемость (чел/день)</h3>
+                    <div class="h-64"><canvas id="attendanceChart"></canvas></div>
+                </div>
+            </div>
+
+            <div x-show="adminTab === 'supplies'" class="flex-1 overflow-y-auto custom-scroll p-4 space-y-3">
+                <div class="text-sm text-gray-500 mb-2 font-bold">Входящие заявки:</div>
+                <template x-for="sup in adminData.supplies" :key="sup.id">
+                    <div class="bg-white dark:bg-dark-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-dark-700">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="font-bold text-lg dark:text-white" x-text="sup.product_name"></div>
+                                <div class="text-sm text-gray-500" x-text="sup.amount + ' шт.'"></div>
+                                <div class="text-xs text-brand-500 font-bold mt-1" x-text="'Расчетная стоимость: ' + sup.estimated_cost + '₽'"></div>
+                            </div>
+                            <div class="text-xs font-bold uppercase px-2 py-1 rounded"
+                                :class="{
+                                    'bg-yellow-100 text-yellow-600': sup.status === 'pending',
+                                    'bg-green-100 text-green-600': sup.status === 'approved',
+                                    'bg-red-100 text-red-600': sup.status === 'rejected'
+                                }" x-text="sup.status"></div>
+                        </div>
+                        <div x-show="sup.status === 'pending'" class="flex gap-2">
+                            <button @click="updateSupplyStatus(sup, 'approved')" class="flex-1 py-2 bg-green-500 text-white rounded-lg font-bold text-xs hover:bg-green-600 transition">✔ Одобрить</button>
+                            <button @click="updateSupplyStatus(sup, 'rejected')" class="flex-1 py-2 bg-red-500 text-white rounded-lg font-bold text-xs hover:bg-red-600 transition">✖ Отказать</button>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="!adminData.supplies?.length" class="text-center text-gray-400 py-10">Заявок нет</div>
+            </div>
+
+            <div x-show="adminTab === 'reports'" class="flex-1 overflow-y-auto custom-scroll p-6">
+                <div class="space-y-4">
+                    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 p-6 rounded-3xl text-white shadow-xl">
+                        <h3 class="text-lg font-bold opacity-80 mb-4">Финансовый отчет</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <div class="text-xs opacity-70">Доходы</div>
+                                <div class="text-2xl font-black" x-text="(adminReport.income || 0) + ' ₽'"></div>
+                            </div>
+                            <div>
+                                <div class="text-xs opacity-70">Затраты (Закупки)</div>
+                                <div class="text-2xl font-black" x-text="(adminReport.expenses || 0) + ' ₽'"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-white/20">
+                            <div class="text-xs opacity-70">Чистая прибыль</div>
+                            <div class="text-3xl font-black" x-text="(adminReport.profit || 0) + ' ₽'"></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-dark-800 p-6 rounded-3xl shadow-md border dark:border-dark-700">
+                        <h3 class="text-lg font-bold mb-4 dark:text-white">Статистика питания</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-500">Всего блюд выдано:</span>
+                                <span class="font-bold text-xl dark:text-white" x-text="adminReport.nutrition?.totalDishes || 0"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="adminTab === 'notify'" class="flex-1 overflow-y-auto custom-scroll p-6 flex flex-col items-center">
+                <div class="w-full max-w-md bg-white dark:bg-dark-800 p-6 rounded-2xl shadow-lg border dark:border-dark-700">
+                    <div class="text-5xl mb-6 text-center animate-bounce">📢</div>
+                    <h3 class="text-2xl font-black text-center mb-1 dark:text-white">Центр Уведомлений</h3>
+                    <p class="text-center text-gray-400 text-xs mb-8">Отправьте push-уведомление пользователям</p>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 mb-2 block uppercase">1. Получатели</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button @click="adminMsgTarget = 'ALL'" :class="adminMsgTarget === 'ALL' ? 'bg-brand-500 text-white ring-2 ring-brand-300' : 'bg-gray-100 dark:bg-dark-900 text-gray-500'" class="p-3 rounded-xl font-bold text-xs transition">
+                                    🌍 Все
+                                </button>
+                                <button @click="adminMsgTarget = 'STUDENT'" :class="adminMsgTarget === 'STUDENT' ? 'bg-brand-500 text-white ring-2 ring-brand-300' : 'bg-gray-100 dark:bg-dark-900 text-gray-500'" class="p-3 rounded-xl font-bold text-xs transition">
+                                    🎓 Ученики
+                                </button>
+                                <button @click="adminMsgTarget = 'COOK'" :class="adminMsgTarget === 'COOK' ? 'bg-brand-500 text-white ring-2 ring-brand-300' : 'bg-gray-100 dark:bg-dark-900 text-gray-500'" class="p-3 rounded-xl font-bold text-xs transition">
+                                    👨‍🍳 Повара
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-bold text-gray-500 mb-2 block uppercase">2. Сообщение</label>
+                            <textarea x-model="adminMsg" class="w-full p-4 bg-gray-50 dark:bg-dark-900 border-2 focus:border-brand-500 dark:border-dark-700 rounded-xl dark:text-white h-32 resize-none font-medium" placeholder="Введите текст объявления..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <button @click="sendGlobalNotify('info')" class="py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl transition shadow-lg flex flex-col items-center">
+                            <span class="text-xl mb-1">ℹ️</span>
+                            <span class="text-xs">Инфо</span>
+                        </button>
+                        <button @click="sendGlobalNotify('warning')" class="py-4 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl transition shadow-lg flex flex-col items-center">
+                            <span class="text-xl mb-1">🚨</span>
+                            <span class="text-xs">Срочно</span>
+                        </button>
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-4 text-center">Сообщение появится вверху экрана у выбранной группы.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div x-show="modals.reviews" class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center sm:p-4 bg-black/60 backdrop-blur-sm" x-cloak>
+        <div class="bg-white dark:bg-dark-900 w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 h-[80vh] flex flex-col animate-bounce-in" @click.outside="modals.reviews = false">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-xl font-black dark:text-white" x-text="activeProduct?.name"></h3>
+                    <p class="text-xs text-gray-500" x-text="activeProduct?.desc"></p>
+                </div>
+                <button @click="modals.reviews=false" class="text-2xl text-gray-400">&times;</button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto custom-scroll space-y-3 mb-4 pr-2">
+                <template x-for="review in productReviews" :key="review.id">
+                    <div class="bg-gray-50 dark:bg-dark-800 p-3 rounded-xl">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-bold text-xs dark:text-gray-200" x-text="review.user_name"></span>
+                            <span class="text-yellow-500 text-xs font-bold">★ <span x-text="review.rating"></span></span>
+                        </div>
+                        <p class="text-sm dark:text-gray-300" x-text="review.comment"></p>
+                        <div class="text-[10px] text-gray-400 mt-1" x-text="formatTime(review.date)"></div>
+                    </div>
+                </template>
+                <div x-show="productReviews.length===0" class="text-center text-gray-400 py-10">Пока нет отзывов</div>
+            </div>
+        </div>
+    </div>
+
+    <div x-show="modals.orderReviews" class="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" x-cloak>
+        <div class="bg-white dark:bg-dark-900 w-full max-w-md rounded-3xl p-6 max-h-[85vh] overflow-y-auto animate-bounce-in">
+            <h3 class="text-2xl font-black mb-1 dark:text-white text-center">Как вам еда? 😋</h3>
+            <p class="text-center text-gray-500 text-sm mb-6">Оцените каждое блюдо отдельно</p>
+
+            <div class="space-y-6">
+                <template x-for="(item, idx) in itemsToReview" :key="idx">
+                    <div class="bg-gray-50 dark:bg-dark-800 p-4 rounded-2xl">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="text-2xl" x-text="item.image"></div>
+                            <div class="font-bold leading-tight dark:text-white" x-text="item.name"></div>
+                        </div>
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex gap-1">
+                                <template x-for="i in 5">
+                                    <button @click="item.rating = i" class="text-2xl transition"
+                                            :class="i <= item.rating ? 'text-yellow-400' : 'text-gray-300'">★</button>
+                                </template>
+                            </div>
+                        </div>
+                        <input x-model="item.comment" type="text" placeholder="Комментарий (необязательно)" class="w-full p-2 bg-white dark:bg-dark-900 border dark:border-dark-700 rounded-lg text-sm dark:text-white">
+                    </div>
+                </template>
+            </div>
+
+            <button @click="sendOrderReviews" class="w-full mt-6 py-3 bg-brand-600 hover:bg-brand-500 text-white rounded-xl font-bold shadow-lg">Отправить отзывы</button>
+        </div>
+    </div>
+
+    <div x-show="modals.topUp" class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" x-cloak>
+        <div class="bg-white dark:bg-dark-900 w-full max-w-sm rounded-3xl p-6 animate-fade-in" @click.outside="modals.topUp = false">
+            <h3 class="text-xl font-bold mb-4 dark:text-white">Пополнение</h3>
+            <div class="grid grid-cols-3 gap-3 mb-4">
+                <button @click="topUpVal = 100" class="py-2 border-2 dark:border-dark-700 rounded-xl font-bold dark:text-white hover:border-brand-500 transition">100₽</button>
+                <button @click="topUpVal = 500" class="py-2 border-2 dark:border-dark-700 rounded-xl font-bold dark:text-white hover:border-brand-500 transition">500₽</button>
+                <button @click="topUpVal = 5000" class="py-2 border-2 dark:border-dark-700 rounded-xl font-bold dark:text-white hover:border-brand-500 transition">5000₽</button>
+            </div>
+            <input type="number" x-model="topUpVal" class="w-full p-3 bg-gray-100 dark:bg-dark-800 rounded-xl text-center font-bold mb-4 dark:text-white">
+            <button @click="performTopUp" class="w-full py-3 bg-brand-600 text-white rounded-xl font-bold">Оплатить</button>
+        </div>
+    </div>
+
+    <div x-show="modals.supply" class="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" x-cloak>
+        <div class="bg-white dark:bg-dark-900 w-full max-w-sm rounded-2xl p-6" @click.outside="modals.supply=false">
+            <h3 class="font-bold text-lg mb-4 dark:text-white">Заказ продуктов</h3>
+            <p class="text-xs text-gray-400 mb-2">Выберите продукт из меню</p>
+            
+            <select x-model="supplyForm.productId" class="w-full p-3 bg-gray-100 dark:bg-dark-800 rounded-lg mb-2 dark:text-white">
+                <option value="" disabled selected>Выберите продукт...</option>
+                <template x-for="p in products" :key="p.id">
+                    <option :value="p.id" x-text="p.name"></option>
+                </template>
+            </select>
+
+            <input x-model="supplyForm.amount" type="number" placeholder="Количество (шт)" class="w-full p-3 bg-gray-100 dark:bg-dark-800 rounded-lg mb-2 dark:text-white">
+            
+            <div x-show="supplyForm.productId && supplyForm.amount" class="mb-4 bg-blue-50 dark:bg-blue-900/20 p-2 rounded text-xs text-blue-600 dark:text-blue-300">
+                Примерная стоимость: <span class="font-bold" x-text="getSupplyEstCost() + ' ₽'"></span>
+            </div>
+
+            <button @click="sendSupplyRequest" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-lg" :disabled="!supplyForm.productId">Отправить админу</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        const socket = io();
+
+        function app() {
+            return {
+                view: 'AUTH',
+                authMode: 'login',
+                isDark: false,
+                globalLoading: false,
+                studentTab: 'menu',
+                cookTab: 'orders',
+                adminTab: 'dashboard',
+                menuTime: 'all',
+                isSanitaryDay: false,
+                user: null,
+                products: [],
+                myOrders: [],
+                allOrders: [],
+                adminData: { revenue: 0, supplies: [] },
+                adminReport: {},
+                cookData: { stats: {}, supplies: [] },
+                adminChart: null,
+                authForm: { login: '', password: '' },
+                regForm: { login: '', password: '', name: '', allergies: '', preferences: '' },
+                supplyForm: { productId: '', amount: '' },
+                adminMsg: '',
+                adminMsgTarget: 'ALL',
+                topUpVal: 500,
+                cart: [],
+                modals: { topUp: false, supply: false, reviews: false, orderReviews: false },
+                activeProduct: null,
+                productReviews: [],
+                itemsToReview: [], 
+                notification: { show: false, text: '', icon: '', type: '' },
+                announcement: { show: false, message: '', type: 'info' },
+                roles: { 'STUDENT': 'Ученик', 'COOK': 'Повар', 'ADMIN': 'Админ' },
+                statusText: { 'pending': 'Готовится', 'ready': 'Готов к выдаче', 'completed': 'Выдан' },
+                statusColors: { 'pending': 'bg-yellow-500', 'ready': 'bg-green-500', 'completed': 'bg-gray-400' },
+
+                get filteredProducts() { 
+                    return this.products.filter(p => {
+                        if (this.menuTime === 'breakfast' && p.menu_type !== 'breakfast' && p.menu_type !== 'all_day') return false;
+                        if (this.menuTime === 'lunch' && p.menu_type !== 'lunch' && p.menu_type !== 'all_day') return false;
+                        return this.user?.role === 'STUDENT' ? p.stock > 0 : true;
+                    }); 
+                },
+                get cartTotal() { return this.cart.reduce((a,b) => a + (b.price * b.quantity), 0); },
+                get activeOrders() { return this.allOrders.filter(o => o.status !== 'completed').reverse(); },
+                get hasActiveSub() { 
+                    if (!this.user?.subscription_end) return false;
+                    const parts = this.user.subscription_end.split('.');
+                    if(parts.length !== 3) return false;
+                    const subEnd = new Date(parts[2], parts[1]-1, parts[0]);
+                    const now = new Date(); now.setHours(0,0,0,0);
+                    return subEnd >= now;
+                },
+
+                async initApp() {
+                    if (window.matchMedia('(prefers-color-scheme: dark)').matches) this.isDark = true;
+                    const res = await this.api('/init');
+                    if (res) {
+                        this.products = res.products;
+                        this.isSanitaryDay = res.isSanitaryDay;
+                    }
+                    this.initSocket();
+                },
+
+                initSocket() {
+                    socket.on('order:new', (order) => { 
+                        if (this.user?.role === 'COOK') { 
+                            this.allOrders.push(order); 
+                            this.showNotify('Новый заказ!', '🔔'); 
+                        } 
+                    });
+                    socket.on('order:update', (data) => {
+                        if (this.user?.role === 'STUDENT' && this.user.id === data.userId) {
+                            const o = this.myOrders.find(x => x.id === data.id);
+                            if (o) o.status = data.status;
+                            if (data.status === 'ready') this.showNotify('Заказ готов!', '✅');
+                        }
+                        if (this.user?.role === 'COOK') {
+                            const o = this.allOrders.find(x => x.id === data.id);
+                            if (o) o.status = data.status;
+                            if (data.status === 'completed') {
+                                this.loadCookData(); 
+                            }
+                        }
+                    });
+                    socket.on('notify:banner', (data) => {
+                        this.announcement = { show: true, message: data.message, type: data.type };
+                        // Автоскрытие через 10 секунд
+                        setTimeout(() => this.announcement.show = false, 10000);
+                    });
+                    socket.on('stock:update', (data) => {
+                        const p = this.products.find(x => x.id === data.id);
+                        if (p) p.stock = data.stock;
+                    });
+                    socket.on('connect', () => {
+                        if (this.user) socket.emit('auth', this.user.role);
+                    });
+                },
+
+                async api(endpoint, method = 'GET', body = null) {
+                    try {
+                        const opts = { method, headers: { 'Content-Type': 'application/json' } };
+                        if (body) opts.body = JSON.stringify(body);
+                        const res = await fetch(API_URL + endpoint, opts);
+                        if (!res.ok) throw new Error(`Server Error: ${res.status}`);
+                        return await res.json();
+                    } catch (e) { console.error("API Err:", e); return null; }
+                },
+
+                async login() {
+                    this.globalLoading = true;
+                    const res = await this.api('/auth/login', 'POST', this.authForm);
+                    this.globalLoading = false;
+                    if (res && res.success) {
+                        this.user = res.user;
+                        this.view = 'APP';
+                        // Сразу регистрируем роль в сокете
+                        socket.emit('auth', this.user.role);
+                        this.loadRoleData();
+                    } else { alert(res?.error || 'Ошибка входа'); }
+                },
+                async register() {
+                    if (!this.regForm.login || !this.regForm.password) return alert('Заполните поля');
+                    const res = await this.api('/auth/register', 'POST', this.regForm);
+                    if (res && res.success) { this.showNotify('Создано! Войдите.', '✅'); this.authMode = 'login'; } 
+                    else { alert(res?.error || 'Ошибка'); }
+                },
+                logout() { 
+                    window.location.reload();
+                },
+
+                normalizeText(str) { return str ? str.toLowerCase().replace(/ё/g, 'е').replace(/[^а-яa-z\s]/g, '') : ''; },
+                hasAllergy(product) {
+                    if (!this.user?.allergies) return false;
+                    const userAllergens = this.user.allergies.split(',').map(s => this.normalizeText(s)).filter(s => s.length > 2);
+                    const productText = this.normalizeText(product.name + ' ' + product.desc);
+                    return userAllergens.some(allergen => productText.includes(allergen));
+                },
+
+                async loadRoleData() {
+                    if (!this.user) return;
+                    if (this.user.role === 'STUDENT') {
+                        const orders = await this.api(`/orders/user/${this.user.id}`);
+                        if (orders) this.myOrders = orders.reverse();
+                    } else if (this.user.role === 'COOK') {
+                        const orders = await this.api('/cook/orders');
+                        if (orders) this.allOrders = orders;
+                        this.loadCookData();
+                    } else if (this.user.role === 'ADMIN') {
+                        this.loadAdminStats();
+                    }
+                },
+                
+                async loadCookData() {
+                    const data = await this.api('/cook/data');
+                    if (data) this.cookData = data;
+                },
+
+                async loadAdminStats() {
+                    const data = await this.api('/admin/stats/advanced');
+                    if (data) {
+                        this.adminData.revenue = data.revenue;
+                        this.updateAdminChart(data.attendance);
+                    }
+                },
+                async loadAdminSupplies() {
+                    const supplies = await this.api('/admin/supplies');
+                    this.adminData.supplies = supplies;
+                },
+                async updateSupplyStatus(supply, status) {
+                    await this.api('/admin/supplies/action', 'POST', { 
+                        id: supply.id, 
+                        status, 
+                        productId: supply.product_id, 
+                        amount: supply.amount 
+                    });
+                    this.loadAdminSupplies();
+                },
+                async loadAdminReport() {
+                    const report = await this.api('/admin/report');
+                    this.adminReport = report;
+                },
+                async sendGlobalNotify(type) {
+                    if(!this.adminMsg) return;
+                    await this.api('/admin/notify', 'POST', { 
+                        message: this.adminMsg, 
+                        type, 
+                        target: this.adminMsgTarget 
+                    });
+                    this.adminMsg = '';
+                    this.showNotify('Отправлено', '🚀');
+                },
+
+                addToCart(p) {
+                    const ex = this.cart.find(x => x.id === p.id);
+                    if (ex) ex.quantity++; else this.cart.push({...p, quantity:1});
+                    this.showNotify('Добавлено', '🛒');
+                },
+
+                async placeOrder() {
+                    this.globalLoading = true;
+                    const res = await this.api('/orders', 'POST', {
+                        userId: this.user.id, items: this.cart, total: this.cartTotal, payWithSub: this.hasActiveSub
+                    });
+                    this.globalLoading = false;
+                    if (res && res.success) {
+                        this.user = res.user;
+                        this.cart = [];
+                        this.studentTab = 'orders';
+                        this.showNotify('Заказ отправлен!', '🚀');
+                        this.loadRoleData();
+                    } else { alert(res?.error || 'Ошибка заказа'); }
+                },
+
+                async openProductReviews(product) {
+                    this.activeProduct = product;
+                    this.modals.reviews = true;
+                    const res = await this.api(`/products/${product.id}/reviews`);
+                    this.productReviews = res || [];
+                },
+
+                async confirmReceipt(orderId) {
+                    await this.api('/orders/confirm', 'POST', { orderId });
+                    const o = this.myOrders.find(x => x.id === orderId);
+                    if(o) o.status = 'completed';
+                    this.itemsToReview = o.items.map(item => ({
+                        productId: item.id,
+                        name: item.name,
+                        image: item.image || '🍽',
+                        rating: 5,
+                        comment: ''
+                    }));
+                    this.modals.orderReviews = true;
+                },
+
+                async sendOrderReviews() {
+                    this.globalLoading = true;
+                    const promises = this.itemsToReview.map(item => 
+                        this.api('/reviews', 'POST', {
+                            userId: this.user.id,
+                            productId: item.productId,
+                            rating: item.rating,
+                            comment: item.comment
+                        })
+                    );
+                    await Promise.all(promises);
+                    this.globalLoading = false;
+                    this.modals.orderReviews = false;
+                    this.showNotify('Спасибо за отзывы!', '⭐️');
+                },
+
+                async performTopUp() {
+                    await this.api('/user/topup', 'POST', { userId: this.user.id, amount: parseInt(this.topUpVal) });
+                    this.user.balance += parseInt(this.topUpVal);
+                    this.modals.topUp = false;
+                },
+                
+                async buySubscription() {
+                    if (this.user.balance < 5000) return alert('На балансе нужно 5000₽');
+                    if (!confirm('Купить абонемент за 5000₽?')) return;
+                    this.globalLoading = true;
+                    const res = await this.api('/user/subscribe', 'POST', { userId: this.user.id });
+                    this.globalLoading = false;
+                    if (res && res.success) {
+                        this.user.balance -= 5000;
+                        this.user.subscription_end = res.subDate;
+                        this.showNotify('Абонемент активирован!', '🔥');
+                    } else { alert('Ошибка покупки'); }
+                },
+
+                async updateOrderStatus(id, status) {
+                    await this.api('/cook/status', 'POST', { orderId: id, status });
+                    const o = this.allOrders.find(x => x.id === id);
+                    if (o) o.status = status;
+                },
+
+                async updateStock(productId, newAmount) {
+                    if (newAmount < 0) return;
+                    const p = this.products.find(x => x.id === productId);
+                    if (p) p.stock = newAmount;
+                    await this.api('/cook/stock', 'POST', { productId, amount: newAmount });
+                },
+
+                getSupplyEstCost() {
+                    const p = this.products.find(x => x.id == this.supplyForm.productId);
+                    if (!p || !this.supplyForm.amount) return 0;
+                    return Math.round(p.price * 0.6 * this.supplyForm.amount);
+                },
+
+                async sendSupplyRequest() {
+                    if(!this.supplyForm.productId || !this.supplyForm.amount) return;
+                    await this.api('/supplies/request', 'POST', { 
+                        productId: this.supplyForm.productId, 
+                        amount: this.supplyForm.amount 
+                    });
+                    this.modals.supply = false;
+                    this.showNotify('Заявка отправлена', '🚚');
+                    this.loadCookData();
+                },
+                
+                async toggleSanitary() {
+                    this.isSanitaryDay = !this.isSanitaryDay;
+                    await this.api('/admin/sanitary', 'POST', { state: this.isSanitaryDay });
+                },
+
+                updateAdminChart(data) {
+                    const ctx = document.getElementById('attendanceChart');
+                    if (!ctx || !data) return;
+                    
+                    const labels = data.map(d => d.d.split('-').slice(1).reverse().join('.'));
+                    const counts = data.map(d => d.c);
+
+                    if (this.adminChart) this.adminChart.destroy();
+                    this.adminChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{ 
+                                label: 'Посетители',
+                                data: counts, 
+                                backgroundColor: '#FF6B00',
+                                borderRadius: 6
+                            }]
+                        },
+                        options: { 
+                            responsive: true, 
+                            maintainAspectRatio: false, 
+                            plugins: { legend: { display: false } },
+                            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                        }
+                    });
+                },
+
+                toggleTheme() { this.isDark = !this.isDark; },
+                formatPrice(p) { return (p||0).toLocaleString('ru-RU') + ' ₽'; },
+                formatTime(d) { return new Date(d).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}); },
+                showNotify(text, icon, type = '') { this.notification = {show: true, text, icon, type}; setTimeout(() => this.notification.show = false, 4000); }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -9,6 +9,7 @@
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
+    "ejs": "^4.0.1",
     "express": "^4.22.1",
     "md5": "^2.3.0",
     "socket.io": "^4.8.3",
@@ -19,7 +20,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^4.17.25",
     "@types/md5": "^2.3.6",
-    "@types/node": "^20.19.30",
+    "@types/node": "^20.19.31",
     "@types/sqlite3": "^3.1.11",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
