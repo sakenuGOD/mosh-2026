@@ -836,7 +836,17 @@
 
                 addToCart(p) {
                     const ex = this.cart.find(x => x.id === p.id);
-                    if (ex) ex.quantity++; else this.cart.push({...p, quantity:1});
+                    const currentQtyInCart = ex ? ex.quantity : 0;
+                    if (currentQtyInCart + 1 > p.stock) {
+                        this.showNotify(`Больше нет в наличии! Осталось: ${p.stock}`, '⚠️', 'warning');
+                        return;
+                    }
+
+                    if (ex) {
+                        ex.quantity++;
+                    } else {
+                        this.cart.push({...p, quantity: 1});
+                    }
                     this.showNotify('Добавлено', '🛒');
                 },
 

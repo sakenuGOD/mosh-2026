@@ -310,11 +310,30 @@ app.post("/api/auth/register", async (req, res) => {
 });
 
 // Orders
+
 app.post("/api/orders", async (req, res) => {
   const { userId, items, total, payWithSub } = req.body;
+  
   const user = (
     await query<User>("SELECT * FROM users WHERE id=?", [userId])
   )[0];
+
+  if (!user) return res.json({ success: false, error: "Пользователь не найден" });
+  for (const item of items) {
+    const productInDb = (await query<Product>("SELECT stock, name FROM products WHERE id=?", [item.id]))[0];
+    
+    if (!productInDb) {
+      return res.json({ success: false, error: `Товар ${item.name} не найден в базе` });
+    }
+
+    if (productInDb.stock < item.quantity) {
+      return res.json({ 
+        success: false, 
+        error: `Недостаточно товара: "${productInDb.name}". Доступно: ${productInDb.stock}, в заказе: ${item.quantity}` 
+      });
+    }
+  }
+  // ------------------------------------------------
 
   let finalTotal = total;
   if (payWithSub) {
@@ -334,18 +353,21 @@ app.post("/api/orders", async (req, res) => {
   }
 
   if (!payWithSub && user.balance < finalTotal)
-    return res.json({ success: false, error: "Нет денег" });
+    return res.json({ success: false, error: "Недостаточно средств на балансе" });
 
-  if (finalTotal > 0)
+  if (finalTotal > 0) {
     await run("UPDATE users SET balance = balance - ? WHERE id=?", [
       finalTotal,
       userId,
     ]);
-  for (const item of items)
+  }
+
+  for (const item of items) {
     await run("UPDATE products SET stock = stock - ? WHERE id=?", [
       item.quantity,
       item.id,
     ]);
+  }
 
   const date = new Date().toISOString();
   const result = await run(
@@ -374,11 +396,15 @@ app.post("/api/orders", async (req, res) => {
     date,
   });
 
+  for (const item of items) {
+     const updatedProduct = (await query<Product>("SELECT stock FROM products WHERE id=?", [item.id]))[0];
+     io.emit('stock:update', { id: item.id, stock: updatedProduct.stock });
+  }
+
   const u2 = (await query<User>("SELECT * FROM users WHERE id=?", [userId]))[0];
   const { password, ...safeUser } = u2;
   res.json({ success: true, user: safeUser });
 });
-
 // Reviews
 app.get("/api/products/:id/reviews", async (req, res) => {
   const reviews = await query(
