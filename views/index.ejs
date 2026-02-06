@@ -903,9 +903,25 @@
                 },
 
                 async performTopUp() {
-                    await this.api('/user/topup', 'POST', { userId: this.user.id, amount: parseInt(this.topUpVal) });
-                    this.user.balance += parseInt(this.topUpVal);
-                    this.modals.topUp = false;
+                    
+                    if (this.globalLoading) return;
+
+                    this.globalLoading = true; 
+
+                    try {
+                        const res = await this.api('/user/topup', 'POST', { userId: this.user.id, amount: parseInt(this.topUpVal) });
+
+                        if (res && res.success) {
+                            this.user.balance += parseInt(this.topUpVal);
+                            this.modals.topUp = false;
+                            this.showNotify('Баланс пополнен!', '💰');
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        this.showNotify('Ошибка пополнения', '❌', 'warning');
+                    } finally {
+                        this.globalLoading = false;
+                    }
                 },
                 
                 async buySubscription() {
