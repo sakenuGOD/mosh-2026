@@ -1,67 +1,66 @@
-# 🍱 Школьная Цифровая Столовая (mosh-2026)
+# 🍱 School Digital Canteen (mosh-2026)
 
-## 📝 Описание проекта
-Веб-приложение для автоматизации работы школьной столовой. Позволяет ученикам заказывать еду онлайн, оплачивать её с баланса или абонемента, а поварам — мгновенно получать заказы.
+## 📝 About
+Web app that automates a school canteen. Students order food online and pay from their balance or subscription; cooks get the orders on a tablet in real time.
 
-Проект решает проблему очередей на переменах и упрощает учет продуктов.
+Kills the break-time queue and simplifies stock accounting. Built for a school olympiad.
 
-### Основные возможности:
-*   🍎 **Ученик:** Онлайн-меню, заказ без очереди, абонементы, отзывы.
-*   👨‍🍳 **Повар:** Планшет с заказами, стоп-лист продуктов.
-*   📊 **Админ:** Учет финансов, аналитика популярности блюд.
-*   ⚡ **Real-time:** Мгновенные уведомления через WebSockets.
+### What it does
+*   🍎 **Student:** online menu, queue-free ordering, subscription plans, reviews.
+*   👨‍🍳 **Cook:** tablet view of incoming orders, stop-list for missing products.
+*   📊 **Admin:** finance tracking, dish-popularity analytics, supply requests.
+*   ⚡ **Real-time:** instant notifications over WebSockets.
 
-## 🛠 Стек технологий
-*   **Backend:** Node.js, Express, TypeScript, SQLite3.
-*   **Frontend:** HTML5, TailwindCSS, Alpine.js.
+## 🛠 Stack
+*   **Backend:** Node.js, Express, TypeScript (run via `tsx`), SQLite3.
+*   **Frontend:** single EJS page + TailwindCSS (CDN) + Alpine.js (CDN).
 *   **Real-time:** Socket.IO.
+*   **Bot integration:** Telegraf (Telegram notifications).
 
 ---
 
-## 🚀 Инструкция по установке и запуску
+## 🚀 Install & run
 
-1.  **Требования:**
-    Установите [Node.js](https://nodejs.org/) (версия 16 или выше).
+1.  **Requirements:**
+    Install [Node.js](https://nodejs.org/) (v16 or higher).
 
-2.  **Скачивание:**
-    Клонируйте репозиторий и перейдите в папку проекта:
+2.  **Clone:**
     ```bash
     git clone https://github.com/sakenuGOD/mosh-2026
     cd mosh-2026
     ```
 
-3.  **Установка зависимостей:**
+3.  **Install dependencies:**
     ```bash
     npm install
     ```
 
-4.  **Настройка окружения:**
-    Создайте файл `.env` (если требуется), но по умолчанию проект работает на стандартных настройках.
+4.  **Environment:**
+    Create a `.env` file if needed — defaults work out of the box.
 
-5.  **Запуск:**
-    Для обычного запуска:
+5.  **Run:**
     ```bash
     npm start
     ```
-    *Или если используете TypeScript напрямую:* 
+    *Or directly via TypeScript:*
     ```bash
-    npx ts-node server.ts
+    npx tsx src/server.ts
     ```
 
 ---
 
-## 🖥 Использование
-Откройте в браузере: [http://localhost:3000](http://localhost:3000)
+## 🖥 Usage
+Open in your browser: [http://localhost:3000](http://localhost:3000)
 
-### Тестовые данные для входа:
+### Test credentials
 
-| Роль | Логин | Пароль |
+| Role | Login | Password |
 | :--- | :--- | :--- |
-| **Администратор** | `admin` | `admin` |
-| **Повар** | `cook` | `cook` |
-| **Ученик** | `student` | `student` |
+| **Admin** | `admin` | `admin` |
+| **Cook** | `cook` | `cook` |
+| **Student** | `student` | `student` |
 
 ---
 
-## 🎥 Видео-демонстрация
-👉 [Смотреть видео на Rutube](https://rutube.ru/video/private/f34127607058a6b2e99846c45d95d123/?r=a&p=BD8HE2CV94ACcUFUytakJA)
+## 🎥 Demo video
+👉 [Watch on Rutube](https://rutube.ru/video/private/f34127607058a6b2e99846c45d95d123/?r=a&p=BD8HE2CV94ACcUFUytakJA)
